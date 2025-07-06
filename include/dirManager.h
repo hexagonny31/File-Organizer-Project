@@ -15,9 +15,10 @@ private:
               std::vector<std::filesystem::path> &dirVector);
 
 public:
-    void createConfig(const std::string &fileName);
-    void addDirectory(const std::string &fileName);
-    Config readConfig(const std::string &fileName);
+    void createConfig   (const std::string &fileName);
+    void addDirectory   (const std::string &fileName);
+    void removeDirectory(const std::string &fileName);
+    Config readConfig   (const std::string &fileName);
 
     const std::vector<std::filesystem::path>& getSrcDir() const { return srcDir; }
     std::filesystem::path getSrcDir(size_t index) const { 
