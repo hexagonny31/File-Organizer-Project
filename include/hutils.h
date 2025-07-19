@@ -18,7 +18,7 @@
 #define HUTIL_API
 #endif  
 
-constexpr int SCREEN_WIDTH  = 75;
+constexpr int SCREEN_WIDTH  = 100;
 constexpr int SCREEN_HEIGHT = 30;
 
 namespace hUtils {
