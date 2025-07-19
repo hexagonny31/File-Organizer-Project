@@ -58,11 +58,11 @@ namespace hUtils {
 
     void Logger::Summary()
     {
-        cout << "\nSummary:\n\n"
+        cout << "Summary:\n\n"
              << setw(17) << left << "Files Moved: "     << filesMoved     << '\n'
              << setw(17) << left << "Folders Removed: " << foldersRemoved << '\n'
              << setw(17) << left << "Folders Created: " << foldersCreated << '\n'
              << setw(17) << left << "Warnings: "        << warnings       << '\n'
-             << setw(17) << left << "Errors: "          << errors         << "\n\n";
+             << setw(17) << left << "Errors: "          << errors         << "\n";
     }
 }

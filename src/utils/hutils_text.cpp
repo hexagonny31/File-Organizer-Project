@@ -13,7 +13,7 @@ namespace hUtils {
 
     void Text::toLine(char character)
     {
-        cout << string(SCREEN_WIDTH, character) << '\n';
+        cout << string(SCREEN_WIDTH - 1, character) << '\n';
     }
 
     void Text::toCentered(string text, int colorCode, int number, bool use256)
@@ -121,8 +121,9 @@ namespace hUtils {
     }
 
     void Text::clearAbove(int line) {
+        cout << "\033[2K";
         for (int i = 0; i < line; i++) {
-            cout << "\033[1A" << "\033[2K";
+            cout << "\033[1A" << "\033[G" << "\033[2K";
         }
         cout.flush();
     }
