@@ -1,2 +1,0 @@
-sourceDirectories=C:\Users\ADMIN\Desktop\Documents
-initialDirectories=C:\Users\ADMIN\Downloads,C:\Users\ADMIN\Desktop,C:\Users\ADMIN\Documents
