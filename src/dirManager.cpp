@@ -14,7 +14,7 @@ void Config::createConfig(const string &fileName) {
     std::vector<string> dirLabels = {"prefered documents", "downloads", "desktop"};
     std::vector<fs::path> paths(3);
     
-    cout << "If you already have your existing documents folder is decently sorted,\n"
+    cout << "\nIf you already have your existing documents folder is decently sorted,\n"
          << "I suggest you to create a new secondary documents folder.\n\n";
 
     for(size_t i = 0; i < dirLabels.size(); ++i) {
@@ -23,11 +23,12 @@ void Config::createConfig(const string &fileName) {
             std::cin >> paths[i];
 
             if(!exists(paths[i]) || !is_directory(paths[i])) {
-                cout << "Path does not exists or is not a directory!";
+                cout << "Path does not exists or is not a directory!\n";
                 paths[i].clear();
             }
         } while(paths[i].empty());
     }
+
     hUtils::log.Success("\nDirectory Accepted:");
     for(const auto &path : paths) {
         cout << '\t' << path.string() << '\n';
@@ -44,6 +45,7 @@ void Config::createConfig(const string &fileName) {
     else {
         hUtils::log.Error("Failed to create file " + fileName);
     }
+    hUtils::text.clearAll();
 }
 
 void Config::addDirectory(const string &fileName) {

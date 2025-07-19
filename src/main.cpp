@@ -13,7 +13,6 @@ int main() {
     sortAlgo sort;
 
     hUtils::setConsoleWindowSize(); hUtils::text.clearAll();
-    hUtils::text.toLine();
 
     const std::string fileName = "fileSYSman_Config.txt";
     bool check = false;
@@ -23,10 +22,9 @@ int main() {
     if(!fs::exists(fileName)) {
         hUtils::log.Error("Config file does not exist!");
         std::cout << "\nYou don't have the config file for fileSYSman!\n"
-                  << "Let's quickly configure your settings.\n\n";
-        hUtils::pause();
+                  << "Let's quickly configure your settings.\n";
         hUtils::text.toLine();
-        std::cout << '\n';
+        hUtils::pause();
         config.createConfig(fileName);
         check = true;
     }
@@ -41,6 +39,7 @@ int main() {
     }
 
     fs::path selSrc = pickSrcDir(config);
+    hUtils::text.toLine();
     std::unordered_map<string, fs::path> tempMap = {
         {".pdf",  selSrc / "PDF"},
         {".docx", selSrc / "DOCX"},
@@ -50,14 +49,16 @@ int main() {
     };
     sort.setDestMap(tempMap);
 
-    hUtils::sleep(2000); hUtils::text.clearAll();
-    hUtils::text.toLine();
+    hUtils::sleep(2000);
     printConfig(config, sort, selSrc);
-    hUtils::pause();
+    hUtils::text.toLine();
+    hUtils::pause(check);
 
     mainMenu(config, sort, selSrc, fileName);
 
+    hUtils::text.toLine();
     hUtils::log.Summary();
+    hUtils::text.toLine();
     hUtils::pause(true);
 
     return 0;

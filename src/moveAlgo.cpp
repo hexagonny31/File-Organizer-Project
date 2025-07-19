@@ -32,7 +32,6 @@ void sortAlgo::moveToSrcDir(const fs::path &src, const Config &config) {
             if(destMap.find(ext) != destMap.end()) moveFile(filePath, src);
         }
     }
-    cout << '\n';
 }
 
 void sortAlgo::byExt(const fs::path &src) {
