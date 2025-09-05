@@ -45,6 +45,10 @@ namespace hUtils {
         #endif
     }
 
+    /*
+        std::cin.get() is so primitive that I have to add a check(bool) if the last input ended with a new line('\n').
+        Otherwise, the whole premise refuses to work. So please understand.
+    */
     void pause(bool clearBuffer)
     {
         std::cout << "Press Enter to continue. . .";

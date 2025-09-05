@@ -44,6 +44,7 @@ namespace hUtils {
                                           int number = 0,
                                           bool use256 = false);
         HUTIL_API std::string toLowerCase(std::string text);     //  Convert string to lowercase.
+        HUTIL_API std::string toUpperCase(std::string text);     //  Convert string to uppercase.
         template <typename T>
         HUTIL_API std::string toString(const T& value,           //  Converts int and doubles to string.
                                        int precision)

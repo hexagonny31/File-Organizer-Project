@@ -15,9 +15,9 @@ void sortAlgo::removeFolder(const fs::path &destination) {
     }
 }
 
-void sortAlgo::removeExtSort(const fs::path& src) {
+void sortAlgo::removeExtSort(const fs::path& src, const Config &config) {
     try {
-        for(const auto &entry : destMap) {
+        for(const auto &entry : config.getDestMap()) {
             const fs::path &destDir = entry.second;
             if(!exists(destDir) || !is_directory(destDir)) {
                 hUtils::log.Warning("Directory does not exist or is not a directory: " + destDir.string());

@@ -4,7 +4,8 @@
 #include <filesystem>
 #include "sortAlgo.h"
 
-void printConfig(const Config &config,
+int validateChoice(int min, int max, std::string prompt);
+void printConfig(Config &config,
                  const sortAlgo &sort,
                  const std::filesystem::path &selSrc);
 std::filesystem::path pickSrcDir(const Config &config);

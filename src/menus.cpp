@@ -9,12 +9,18 @@
 using std::cout;
 using std::string;
 namespace fs = std::filesystem;
+enum
+{
+    MOVE = 1,
+    SORT = 2,
+    CONFIGURE = 3,
+};
 
-void printConfig(const Config &config, const sortAlgo &sort, const fs::path &selSrc)
+void printConfig(Config &config, const sortAlgo &sort, const fs::path &selSrc)
 {
     cout << "Current Configuration:\n\n";
 
-    if (!config.getInitDir().empty()) {
+    if(!config.getInitDir().empty()) {
         cout << "Initial directories:\n";
         for (const auto &init : config.getInitDir())
             cout << '\t' << init.string() << '\n';
@@ -26,7 +32,7 @@ void printConfig(const Config &config, const sortAlgo &sort, const fs::path &sel
     cout << "Source directory:\n";
     for (const auto &src : config.getSrcDir()) {
         cout << '\t';
-        if (src.string() == selSrc.string()) {
+        if(src.string() == selSrc.string()) {
             cout << hUtils::text.bgColor(104) << src.string() << hUtils::text.defaultText();
         }
         else {
@@ -35,9 +41,9 @@ void printConfig(const Config &config, const sortAlgo &sort, const fs::path &sel
         cout << '\n';
     }
 
-    if (!sort.getDestMap().empty()) {
+    if(!config.getDestMap().empty()) {
         cout << "Destination directories (for extensions):\n";
-        for (const auto &[extension, destDir] : sort.getDestMap())
+        for (const auto &[extension, destDir] : config.getDestMap())
             cout << '\t' << destDir.string() << " -> " << extension << '\n';
     }
     else {
@@ -45,121 +51,121 @@ void printConfig(const Config &config, const sortAlgo &sort, const fs::path &sel
     }
 }
 
-fs::path pickSrcDir(const Config &config)
+int validateChoice(int min, int max, string prompt)
 {
-    size_t index = 0;
-    const auto &srcDir = config.getSrcDir();
-
-    if (srcDir.size() > 1) {
-        int choice = -1;
-        cout << "\nYou currently have multiple source directories assigned.\n";
-
-        do {
-            hUtils::sleep(600);
-            cout << "Please pick which folder you want to sort:\n";
-            for (size_t i = 0; i < srcDir.size(); ++i) {
-                cout << '\t' << i + 1 << " -> " << config.getSrcDir(i).string() << '\n';
-            }
-            cout << '\n'
-                 << hUtils::text.fgColor(93) << "Choose action: " << hUtils::text.defaultText();
-            std::cin >> choice;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-            if (choice < 1 || static_cast<size_t>(choice) > srcDir.size()) {
-                cout << "Invalid choice. Please try again.\n\n";
-            }
-        } while (choice < 1 || static_cast<size_t>(choice) > srcDir.size());
-
-        index = static_cast<size_t>(choice - 1);
-    }
-    fs::path selSrc = config.getSrcDir(index);
-    hUtils::log.Action("\nSelected source directory: ", selSrc.string());
-    return selSrc;
-}
-
-int validateChoice(int min, int max, string prompt) {
     int choice = -1;
     string input;
 
-    do{
+    do {
         std::cout << prompt;
         std::getline(std::cin, input);
-        try {
+        try
+        {
             choice = std::stoi(input);
-        } catch(...) {
+        }
+        catch (...)
+        {
             choice = 0;
         }
-        
+
         //  Do not change!! This is neccessary and it will break if you try to fix it.
-        if(choice < min || choice > max) {
+        if (choice < min || choice > max)
+        {
             std::cout << "\nInvalid choice! Please try again!";
             hUtils::sleep(2500);
             hUtils::text.clearAbove(2);
         }
-    } while (choice < min || choice > max);
+    } while(choice < min || choice > max);
     return choice;
+}
+
+fs::path pickSrcDir(const Config &config)
+{
+    size_t index = 0;
+    const auto &srcDir = config.getSrcDir();
+    int lines = 4 + srcDir.size();
+
+    if(srcDir.size() > 1) {
+        int choice = -1;
+        cout << "You currently have multiple source directories assigned.\n";
+
+        hUtils::sleep(1000);
+        cout << "Please pick which folder you want to sort:\n";
+        for (size_t i = 0; i < srcDir.size(); ++i) {
+            cout << '\t' << i + 1 << " -> " << config.getSrcDir(i).string() << '\n';
+        }
+
+        choice = validateChoice(1, srcDir.size(), hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
+        index = static_cast<size_t>(choice - 1);
+        hUtils::text.clearAbove(lines);
+    }
+    fs::path selSrc = config.getSrcDir(index);
+    hUtils::log.Action("Selected source directory: ", selSrc.string());
+    return selSrc;
 }
 
 void mainMenu(Config &config, sortAlgo &sort, const fs::path &selSrc, const std::string &fileName)
 {
-    int choice;
-    string input;
+    int lines = 7 + config.getInitDir().size() + config.getSrcDir().size() + config.getDestMap().size();
 
     std::cout << "1. Move files to your documents folder\n"
               << "2. Sort files in your documents folder\n"
-              << "3. Remove sorted folders in your documents folder\n"
-              << "4. Add/Remove a directory\n"
-              << "5. Exit.\n\n";
+              << "3. Configure settings\n"
+              << "4. Exit.\n\n";
 
-    choice = validateChoice(1, 5, hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
-    hUtils::text.toLine();
+    int choice = validateChoice(1, 4, hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
+    hUtils::text.clearAbove(6);
 
-    switch (choice)
-    {
+    switch(choice) {
+    case MOVE:
+        hUtils::text.clearAbove(lines);
+        sort.moveToSrcDir(selSrc, config);
+        break;
+    case SORT:
+        std::cout << "1. Sort by extension\n"
+                  << "2. Sort alphabetiacally\n"
+                  << "3. Remove extension folders\n"
+                  << "4. Remove alphabetical folders\n\n";
+        choice = validateChoice(1, 4, hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
+        hUtils::text.clearAbove(6 + lines);
+
+        switch(choice) {
         case 1:
-            sort.moveToSrcDir(selSrc, config);
+            sort.byExt(selSrc, config);
             break;
         case 2:
-            std::cout << "1. Sort by extension\n"
-                      << "2. Sort alphabetiacally\n\n";
-            choice = validateChoice(1, 2, hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
-
-            switch (choice) {
-                case 1:
-                    sort.byExt(selSrc);
-                    break;
-                case 2:
-                    sort.byAlph(selSrc);
-                    break;
-            }
+            sort.byAlph(selSrc);
             break;
         case 3:
-            std::cout << "1. Remove extension folders\n"
-                      << "2. Remove alphabetical folders\n\n";
-            choice = validateChoice(1, 2, hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
-
-            switch (choice) {
-                case 1:
-                    sort.removeExtSort(selSrc);
-                    break;
-                case 2:
-                    sort.removeAlphSort(selSrc);
-                    break;
-            }
+            sort.removeExtSort(selSrc, config);
             break;
         case 4:
-            std::cout << "1. Add directory\n"
-                      << "2. Remove directory\n\n";
-            choice = validateChoice(1, 2, hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
-
-            switch(choice) {
-                case 1:
-                    config.addDirectory(fileName);
-                    break;
-                case 2:
-                    config.removeDirectory(fileName);
-                    break;
-            }
+            sort.removeAlphSort(selSrc);
             break;
+        }
+        break;
+    case CONFIGURE:
+        std::cout << "1. Add directory\n"
+                  << "2. Add extension\n"
+                  << "3. Remove directory\n"
+                  << "4. Remove extension\n\n";
+        choice = validateChoice(1, 4, hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
+        hUtils::text.clearAbove(6);
+
+        switch(choice) {
+        case 1:
+            config.addDirectory(fileName);
+            break;
+        case 2:
+            config.addExt(selSrc, fileName, config);
+            break;
+        case 3:
+            config.removeDirectory(fileName);
+            break;
+        case 4:
+            config.removeExt(selSrc, fileName, config);
+            break;
+        }
+        break;
     }
 }

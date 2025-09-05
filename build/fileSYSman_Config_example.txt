@@ -1,2 +1,13 @@
-sourceDirectories=C:\Users\ADMIN\Desktop\Documents
+# Config file for document sorter
+# Source directory where new files will go
+sourceDirectories=C:\Users\ADMIN\Desktop\Test,C:\Users\ADMIN\Desktop\Documents
+# Initial directories scanned at startup
 initialDirectories=C:\Users\ADMIN\Downloads,C:\Users\ADMIN\Desktop,C:\Users\ADMIN\Documents
+
+# Default extension mappings
+extension:.txt=TXT
+extension:.xlsx=XLSX
+extension:.doc=DOCX
+extension:.docx=DOCX
+extension:.pptx=PPTX
+extension:.pdf=PDF

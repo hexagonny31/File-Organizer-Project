@@ -29,12 +29,12 @@ void sortAlgo::moveToSrcDir(const fs::path &src, const Config &config) {
             }
 
             string ext = filePath.extension().string();
-            if(destMap.find(ext) != destMap.end()) moveFile(filePath, src);
+            if(config.getDestMap().find(ext) != config.getDestMap().end()) moveFile(filePath, src);
         }
     }
 }
 
-void sortAlgo::byExt(const fs::path &src) {
+void sortAlgo::byExt(const fs::path &src, const Config &config) {
     try {
         for(const auto& entry : fs::directory_iterator(src)) {
             const auto& filePath = entry.path();
@@ -42,8 +42,8 @@ void sortAlgo::byExt(const fs::path &src) {
 
             const auto &ext = filePath.extension().string();
 
-            if(destMap.find(ext) != destMap.end()) {
-                fs::path destDir = destMap.at(ext);
+            if(config.getDestMap().find(ext) != config.getDestMap().end()) {
+                fs::path destDir = config.getDestMap().at(ext);
 
                 if(!exists(destDir)) {
                     try {
