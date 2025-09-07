@@ -41,12 +41,7 @@ int main()
     
     hUtils::text.toLine();
     fs::path selSrc = pickSrcDir(config);
-    config.buildDestMap(selSrc, config);
-    hUtils::text.toLine();
-
-    printConfig(config, sort, selSrc);
-    hUtils::text.toLine();
-    hUtils::pause(check);
+    config.buildDestMap(selSrc);
 
     mainMenu(config, sort, selSrc, fileName);
 

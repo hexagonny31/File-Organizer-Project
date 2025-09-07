@@ -37,11 +37,11 @@ public:
     const std::vector<std::filesystem::path>& getInitDir() const { return initDir; }
     void setInitDir(const std::vector<std::filesystem::path>& newInitDir) { initDir = newInitDir; }
     void addInitDir(const std::filesystem::path& path) { initDir.push_back(path); }
-    void buildDestMap(const std::filesystem::path &src, Config &config);
+    void buildDestMap(const std::filesystem::path &src);
     const std::unordered_map<std::string, std::filesystem::path>& getDestMap() const { return destMap; }
     
-    void addExt(const std::filesystem::path &src, const std::string &fileName, Config &config);
-    void removeExt(const std::filesystem::path &src, const std::string &fileName, Config &config);
+    void addExt(const std::filesystem::path &src, const std::string &fileName);
+    void removeExt(const std::filesystem::path &src, const std::string &fileName);
     const auto& getExtToFolder() const { return extToFolder; }
 };
 

@@ -18,9 +18,12 @@ namespace hUtils {
                 std::cerr << "Error: Could not get console handle." << std::endl;
                 return;
             }
+
+            SMALL_RECT tempRect = {0, 0, 1, 1};
+            SetConsoleWindowInfo(hOut, TRUE, &tempRect);
         
             // Set buffer size (prevents scrolling)
-            COORD bufferSize = { static_cast<SHORT>(SCREEN_WIDTH), static_cast<SHORT>(SCREEN_HEIGHT) };
+            COORD bufferSize = { static_cast<SHORT>(SCREEN_WIDTH), static_cast<SHORT>(SCREEN_HEIGHT * 30) };
             SetConsoleScreenBufferSize(hOut, bufferSize);
         
             // Set the window size

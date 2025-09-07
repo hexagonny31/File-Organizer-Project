@@ -23,10 +23,7 @@ void sortAlgo::moveToSrcDir(const fs::path &src, const Config &config) {
 
         for(const auto &entry : fs::directory_iterator(init)) {
             const auto &filePath = entry.path();
-            if(!entry.is_regular_file()) {
-                hUtils::log.Warning(filePath.string() + " is not a regular file");
-                continue;
-            }
+            if(!entry.is_regular_file()) continue;
 
             string ext = filePath.extension().string();
             if(config.getDestMap().find(ext) != config.getDestMap().end()) moveFile(filePath, src);

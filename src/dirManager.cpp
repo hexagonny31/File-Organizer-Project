@@ -26,6 +26,8 @@ void Config::createConfigFile(const string &fileName) {
             if (!exists(paths[i]) || !is_directory(paths[i])) {
                 cout << "Path does not exists or is not a directory!\n";
                 paths[i].clear();
+                hUtils::pause(true);
+                hUtils::text.clearAbove(3);
             }
         } while (paths[i].empty());
     }
@@ -70,8 +72,7 @@ Config Config::parseConfigFile(const string &fileName) {
     hUtils::log.Success("Successfully opened: " + fileName);
 
     string line;
-    while (getline(file, line))
-    {
+    while (getline(file, line)) {
         if(line.empty()) continue;
         if (line[0] == '#' || line[0] == ';') continue;
 
@@ -137,25 +138,34 @@ void Config::addDirectory(const string &fileName) {
     fs::path newPath;
     std::string input;
 
-    cout << "Enter the full path of the directory: ";
-    std::cin >> std::ws;
-    std::getline(std::cin, input);
-    newPath = input;
-    hUtils::text.clearAbove(1);
+    do {    
+        cout << "Enter the full path of the directory: ";
+        std::cin >> std::ws;
+        std::getline(std::cin, input);
 
-    if(!fs::exists(newPath) || !fs::is_directory(newPath)) {
-        hUtils::log.Error("The specified path does not exist or is not a directory");
-        hUtils::sleep(1000);
-        hUtils::text.clearAbove(1);
-        return;
-    }
+        if(input == "cancel") {
+            cout << "\nOperation canceled";
+            hUtils::sleep(1000);
+            hUtils::text.clearAbove(2 + lines);
+            return;
+        }
+
+        newPath = input;
+
+        if(!fs::exists(newPath) || !fs::is_directory(newPath)) {
+            std::cout << "\nThe specified path does not exist or is not a directory";
+            hUtils::sleep(1000);
+            hUtils::text.clearAbove(2);
+        }
+    } while(!fs::exists(newPath) || !fs::is_directory(newPath));
+
+    hUtils::text.clearAbove(1);
 
     cout << "Where do you want to add this directory?\n"
          << "1. Initial Directories\n"
          << "2. Source Directories\n"
          << "3. Cancel\n\n";
-    int choice = validateChoice(1, 3, hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
-    hUtils::text.clearAbove(6);
+    size_t choice = static_cast<size_t>(validateChoice(1, 4,"Choose action: "));
 
     switch(choice) {
     case 1:
@@ -165,17 +175,12 @@ void Config::addDirectory(const string &fileName) {
         srcDir.push_back(newPath);
         break;
     case 3:
-        cout << "Operation canceled\n";
+        cout << "\nOperation canceled";
         hUtils::sleep(1000);
-        hUtils::text.clearAbove(1);
-        return;
-    default:
-        cout << "Invalid choice. Please enter 1, 2 or 3\n";
-        hUtils::sleep(1000);
-        hUtils::text.clearAbove(1);
+        hUtils::text.clearAbove(8 + lines);
         return;
     }
-    hUtils::text.clearAbove(lines);
+    hUtils::text.clearAbove(6 + lines);
     hUtils::log.Success("Added " + newPath.string() + " to config file");
     rewriteConfigFile(fileName);
 }
@@ -187,14 +192,13 @@ void Config::removeDirectory(const string &fileName) {
          << "1. Initial Directories\n"
          << "2. Source Directories\n"
          << "3. Cancel\n\n";
-    int choice = validateChoice(1, 3, hUtils::text.fgColor(93) + "Choose action: " + hUtils::text.defaultText());
+    int choice = validateChoice(1, 3, "Choose action: ");
     hUtils::text.clearAbove(6);
 
     std::vector<fs::path> *targetDir = nullptr;
     string dirType;
 
-    switch (choice)
-    {
+    switch(choice) {
     case 1:
         targetDir = &initDir;
         dirType = "initial";
@@ -204,21 +208,16 @@ void Config::removeDirectory(const string &fileName) {
         dirType = "source";
         break;
     case 3:
-        cout << "Operation canceled\n";
+        cout << "Operation canceled";
         hUtils::sleep(1000);
-        hUtils::text.clearAbove(1);
-        return;
-    default:
-        cout << "Invalid choice. Please enter 1, 2, or 3\n";
-        hUtils::sleep(1000);
-        hUtils::text.clearAbove(1);
+        hUtils::text.clearAbove(1 + lines);
         return;
     }
 
     if(targetDir->max_size() <= 1) {
+        hUtils::text.clearAbove(lines);
         hUtils::log.Warning("You only have 1 assigned " + dirType + " directory!");
         hUtils::sleep(1000);
-        hUtils::text.clearAbove(1);
         return;
     }
 
@@ -236,12 +235,21 @@ void Config::removeDirectory(const string &fileName) {
     rewriteConfigFile(fileName);
 }
 
-void Config::addExt(const fs::path &src, const string &fileName, Config &config) {
+void Config::addExt(const fs::path &src, const string &fileName) {
+    int lines = 7 + getInitDir().size() + getSrcDir().size() + getDestMap().size();
     string input;
 
     cout << "Enter a valid file extention(example: txt or .txt): ";
     std::cin >> std::ws;
     std::getline(std::cin, input);
+
+    if(input == "cancel") {
+        cout << "\nOperation canceled";
+        hUtils::sleep(1000);
+        hUtils::text.clearAbove(2 + lines);
+        return;
+    }
+    hUtils::text.clearAbove(1 + lines);
 
     if(input.empty() || input[0] != '.') input.insert(0, ".");
 
@@ -249,67 +257,49 @@ void Config::addExt(const fs::path &src, const string &fileName, Config &config)
     if(folderName.find('.') == 0)
         folderName.erase(std::remove(folderName.begin(), folderName.end(), '.'), folderName.end());
     folderName = hUtils::text.toUpperCase(folderName);
-    hUtils::log.Action("\nGenerated folder name: ", folderName);
-    config.extToFolder[input] = folderName;
+    hUtils::log.Action("Generated folder name: ", folderName);
+    extToFolder[input] = folderName;
 
-    auto &map = config.getExtToFolder();
     hUtils::log.Action("Checking map...", "");
-    cout << "Map size: " << map.size() << '\n';
-    cout << "Elements:\n";
-    for(const auto &[ext, folder] : map) {
-        cout << "\t[" << ext << "] [" << folder << "]\n";
-    }
-
+    buildDestMap(src);
     rewriteConfigFile(fileName);
 }
 
-void Config::removeExt(const fs::path &src, const string &fileName, Config &config) {
-    auto &map = config.getExtToFolder();
+void Config::removeExt(const fs::path &src, const string &fileName) {
+    int lines = 7 + getInitDir().size() + getSrcDir().size() + getDestMap().size();
     std::vector<std::pair<std::string, std::string>> items(
-        map.begin(), map.end());
+        extToFolder.begin(), extToFolder.end());
 
-    if(config.extToFolder.max_size() <= 1) {
+    if(extToFolder.max_size() <= 1) {
+        hUtils::text.clearAbove(lines);
         hUtils::log.Warning("You only have 1 assigned extension!");
-        hUtils::sleep(4000);
+        hUtils::sleep(1000);
         return;
     }
 
-    cout << "\nSelect the extension to remove:\n";
-    for(size_t i = 0; i < items.size(); ++i) {
+    cout << "Select the extension to remove:\n";
+    for(int i = 0; i < items.size(); ++i) {
         std::cout << i + 1 << ". [" << items[i].first << "] [" << items[i].second << "]\n";
     }
-
-    size_t removeIndex;
-    cout << "\nEnter the number of the directory to remove: ";
-    std::cin >> removeIndex;
-    hUtils::text.toLine();
-
-    if(removeIndex < 1 || removeIndex > items.size()) {
-        hUtils::log.Error("Invalid index.");
-        return;
-    }
+    int removeIndex = validateChoice(1, items.size(),"\nEnter the number of the directory to remove: ");
+    hUtils::text.clearAbove(3 + items.size() + lines);
 
     string extToRemove = items[removeIndex - 1].first;
     extToFolder.erase(extToRemove);
 
     hUtils::log.Action("Checking map...", "");
-    cout << "Map size: " << map.size() << '\n';
-    cout << "Elements:\n";
-    for(const auto &[ext, folder] : map) {
-        cout << "\t[" << ext << "] [" << folder << "]\n";
-    }
-
+    destMap.clear();
+    buildDestMap(src);
     rewriteConfigFile(fileName);
 }
 
-void Config::buildDestMap(const fs::path &src, Config &config) {
-    for (const auto &[ext, folder] : config.getExtToFolder())
-    {
+void Config::buildDestMap(const fs::path &src) {
+    for (const auto &[ext, folder] : getExtToFolder()) {
         hUtils::log.Action("Building Map: ", "Passing configuration: " + ext);
         fs::path temp = src / folder;
-        config.destMap[ext] = temp;
-        if(config.destMap.find(ext) != config.destMap.end()) {
-            hUtils::log.Action("Building Map: ", "Setting destination paths: " + config.destMap[ext].string());
+        destMap[ext] = temp;
+        if(destMap.find(ext) != destMap.end()) {
+            hUtils::log.Action("Building Map: ", "Setting destination paths: " + destMap[ext].string());
         }
         else {
             hUtils::log.Error("Failed to set as a destination path: " + temp.string());
@@ -321,10 +311,7 @@ string removeNewLine(const string &str) {
     size_t first = str.find_first_not_of(" \t");
     size_t last = str.find_last_not_of(" \t");
 
-    if (first == string::npos || last == string::npos)
-    {
-        return "";
-    }
+    if (first == string::npos || last == string::npos) return "";
 
     return str.substr(first, (last - first + 1));
 }
