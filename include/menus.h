@@ -11,7 +11,7 @@ void printConfig(Config &config,
 std::filesystem::path pickSrcDir(const Config &config);
 void mainMenu   (Config &config,
                  sortAlgo &sort,
-                 const std::filesystem::path &selSrc,
+                 std::filesystem::path &selSrc,
                  const std::string &fileName);
 
 #endif

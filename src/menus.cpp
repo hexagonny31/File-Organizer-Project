@@ -25,8 +25,7 @@ void printConfig(Config &config, const sortAlgo &sort, const fs::path &selSrc)
         cout << "Initial directories:\n";
         for (const auto &init : config.getInitDir())
             cout << '\t' << init.string() << '\n';
-    }
-    else {
+    } else {
         cout << "Initial Directories: None specified.\n";
     }
 
@@ -46,8 +45,7 @@ void printConfig(Config &config, const sortAlgo &sort, const fs::path &selSrc)
         cout << "Destination directories (for extensions):\n";
         for (const auto &[extension, destDir] : config.getDestMap())
             cout << '\t' << destDir.string() << " -> " << extension << '\n';
-    }
-    else {
+    } else {
         cout << "Destination directories: None specified.\n";
     }
 }
@@ -60,18 +58,15 @@ int validateChoice(int min, int max, string prompt)
     do {
         std::cout << hUtils::text.fgColor(93) << prompt <<  hUtils::text.defaultText();
         std::getline(std::cin, input);
-        try
-        {
+        try {
             choice = std::stoi(input);
         }
-        catch (...)
-        {
+        catch(...) {
             choice = 0;
         }
 
         //  Do not change!! This is neccessary and it will break if you try to fix it.
-        if (choice < min || choice > max)
-        {
+        if(choice < min || choice > max) {
             std::cout << "\nInvalid choice! Please try again!";
             hUtils::sleep(2500);
             hUtils::text.clearAbove(2);
@@ -105,7 +100,7 @@ fs::path pickSrcDir(const Config &config)
     return selSrc;
 }
 
-void mainMenu(Config &config, sortAlgo &sort, const fs::path &selSrc, const std::string &fileName)
+void mainMenu(Config &config, sortAlgo &sort, fs::path &selSrc, const std::string &fileName)
 {
     int lines = 7 + config.getInitDir().size() + config.getSrcDir().size() + config.getDestMap().size();
     size_t choice;
@@ -150,26 +145,32 @@ void mainMenu(Config &config, sortAlgo &sort, const fs::path &selSrc, const std:
                 sort.removeAlphSort(selSrc);
                 break;
             }
+            case 5:
+                std::cout << "\n Operation Canceled.";
+                
             break;
         case CONFIGURE:
-            std::cout << "1. Add directory\n"
-                    << "2. Add extension\n"
-                    << "3. Remove directory\n"
-                    << "4. Remove extension\n\n";
+            std::cout << "1. Change source directory\n"
+                    << "2. Add directory\n"
+                    << "3. Add extension\n"
+                    << "4. Remove directory\n"
+                    << "5. Remove extension\n\n";
             choice = static_cast<size_t>(validateChoice(1, 4,"Choose action: "));
-            hUtils::text.clearAbove(6);
+            hUtils::text.clearAbove(7);
 
             switch(choice) {
             case 1:
+                selSrc = pickSrcDir(config);
+            case 2:
                 config.addDirectory(fileName);
                 break;
-            case 2:
+            case 3:
                 config.addExt(selSrc, fileName);
                 break;
-            case 3:
+            case 4:
                 config.removeDirectory(fileName);
                 break;
-            case 4:
+            case 5:
                 config.removeExt(selSrc, fileName);
                 break;
             }

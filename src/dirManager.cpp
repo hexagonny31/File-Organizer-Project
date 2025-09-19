@@ -223,7 +223,7 @@ void Config::removeDirectory(const string &fileName) {
 
     cout << "Select the directory to remove:\n";
     for(size_t i = 0; i < targetDir->size(); ++i) {
-        cout << '\t' << i + 1 << ". " << (*targetDir)[i].string() << '\n';
+        cout << i + 1 << ". " << (*targetDir)[i].string() << '\n';
     }
     int removeIndex = validateChoice(1, targetDir->size(), "\nEnter the number of the directory to remove: ");
     hUtils::text.clearAbove(lines + 3 + targetDir->size());
@@ -300,8 +300,7 @@ void Config::buildDestMap(const fs::path &src) {
         destMap[ext] = temp;
         if(destMap.find(ext) != destMap.end()) {
             hUtils::log.Action("Building Map: ", "Setting destination paths: " + destMap[ext].string());
-        }
-        else {
+        } else {
             hUtils::log.Error("Failed to set as a destination path: " + temp.string());
         }
     }

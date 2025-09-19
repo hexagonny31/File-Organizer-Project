@@ -31,9 +31,8 @@ int main()
     }
 
     config = config.parseConfigFile(fileName);
-    const auto &srcDir = config.getSrcDir();
 
-    if (srcDir.empty()) {
+    if (config.getSrcDir().empty()) {
         hUtils::log.Error("Source directory is missing in the config file.");
         hUtils::pause(check);
         return 1;
