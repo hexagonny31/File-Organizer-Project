@@ -79,7 +79,7 @@ fs::path pickSrcDir(const Config &config)
 {
     size_t index = 0;
     const auto &srcDir = config.getSrcDir();
-    int lines = 4 + srcDir.size();
+    int lines = 3 + srcDir.size();
 
     if(srcDir.size() > 1) {
         int choice = -1;
@@ -96,16 +96,17 @@ fs::path pickSrcDir(const Config &config)
         hUtils::text.clearAbove(lines);
     }
     fs::path selSrc = config.getSrcDir(index);
+    hUtils::text.clearAbove(1);
     hUtils::log.Action("Selected source directory: ", selSrc.string());
     return selSrc;
 }
 
 void mainMenu(Config &config, sortAlgo &sort, fs::path &selSrc, const std::string &fileName)
 {
-    int lines = 7 + config.getInitDir().size() + config.getSrcDir().size() + config.getDestMap().size();
     size_t choice;
 
     do {
+        int lines = 7 + config.getInitDir().size() + config.getSrcDir().size() + config.getDestMap().size();
         size_t choice = 0;
         hUtils::text.toLine();
         printConfig(config, sort, selSrc);
@@ -127,40 +128,50 @@ void mainMenu(Config &config, sortAlgo &sort, fs::path &selSrc, const std::strin
             std::cout << "1. Sort by extension\n"
                     << "2. Sort alphabetiacally\n"
                     << "3. Remove extension folders\n"
-                    << "4. Remove alphabetical folders\n\n";
+                    << "4. Remove alphabetical folders\n"
+                    << "5. Cancel\n\n";
             choice = static_cast<size_t>(validateChoice(1, 4,"Choose action: "));
-            hUtils::text.clearAbove(6 + lines);
+            hUtils::text.clearAbove(7);
 
             switch(choice) {
             case 1:
+                hUtils::text.clearAbove(lines);
                 sort.byExt(selSrc, config);
                 break;
             case 2:
+                hUtils::text.clearAbove(lines);
                 sort.byAlph(selSrc);
                 break;
             case 3:
+                hUtils::text.clearAbove(lines);
                 sort.removeExtSort(selSrc, config);
                 break;
             case 4:
+                hUtils::text.clearAbove(lines);
                 sort.removeAlphSort(selSrc);
                 break;
-            }
             case 5:
                 std::cout << "\n Operation Canceled.";
-                
+                hUtils::sleep(1000);
+                hUtils::text.clearAbove(2 + lines);
+                break;
+            }   
             break;
         case CONFIGURE:
             std::cout << "1. Change source directory\n"
                     << "2. Add directory\n"
                     << "3. Add extension\n"
                     << "4. Remove directory\n"
-                    << "5. Remove extension\n\n";
+                    << "5. Remove extension\n"
+                    << "6. Cancel\n\n";
             choice = static_cast<size_t>(validateChoice(1, 4,"Choose action: "));
-            hUtils::text.clearAbove(7);
+            hUtils::text.clearAbove(8);
 
             switch(choice) {
             case 1:
                 selSrc = pickSrcDir(config);
+                hUtils::text.clearAbove(lines);
+                break;
             case 2:
                 config.addDirectory(fileName);
                 break;
@@ -172,6 +183,11 @@ void mainMenu(Config &config, sortAlgo &sort, fs::path &selSrc, const std::strin
                 break;
             case 5:
                 config.removeExt(selSrc, fileName);
+                break;
+            case 6:
+                cout << "\nOperation Canceled.";
+                hUtils::sleep(1000);
+                hUtils::text.clearAbove(2);
                 break;
             }
             break;
