@@ -4,14 +4,12 @@
 #include <filesystem>
 #include "sortAlgo.h"
 
-int validateChoice(int min, int max, std::string prompt);
-void printConfig(Config &config,
-                 const sortAlgo &sort,
-                 const std::filesystem::path &selSrc);
-std::filesystem::path pickSrcDir(const Config &config);
-void mainMenu   (Config &config,
-                 sortAlgo &sort,
-                 std::filesystem::path &selSrc,
-                 const std::string &fileName);
+size_t validateChoice(size_t min, size_t max, std::string prompt);
+void printDirectories(const SortAlgo &sort,
+                      const std::filesystem::path &selSrc);
+std::filesystem::path pickSrcDir(const SortAlgo &sort);
+void mainMenu   (SortAlgo &sort,
+                 const std::string &fileName,
+                 std::filesystem::path &selSrc);
 
 #endif

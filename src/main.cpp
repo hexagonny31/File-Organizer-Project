@@ -1,53 +1,51 @@
 #include <iostream>
 #include <fstream>
+
 #include "menus.h"
 #include "hutils.h"
 
 using std::cout;
 using std::string;
+namespace u = hUtils;
 namespace fs = std::filesystem;
 
-int main()
-{
-    Config config;
-    sortAlgo sort;
+int main() {
+    SortAlgo sort;
 
-    hUtils::setConsoleWindowSize();
-    hUtils::text.clearAll();
+    u::setConsoleWindowSize();
+    u::text.clearAll();
 
-    const std::string fileName = "fileSYSman_Config.txt";
-    bool check = false;
+    const string fileName = "fileSYSman_Config.txt";
+    bool bufferCheck = false;
 
-    hUtils::log.Action("Checking if config file exists...", "");
-    hUtils::sleep(1000);
-    if (!fs::exists(fileName)) {
-        hUtils::log.Error("Config file does not exist!");
-        std::cout << "\nYou don't have the config file for fileSYSman!\n"
-                  << "Let's quickly configure your settings.\n";
-        hUtils::text.toLine();
-        hUtils::pause();
-        config.createConfigFile(fileName);
-        check = true;
+    u::log.Action("Checking if config file exists...", "");
+    u::sleep(1000);
+    if(!fs::exists(fileName)) {
+        u::log.Error("Config file does not exists!");
+        cout << "\nYou don't have the config file for fileSYSman!\n"
+             << "Let's quickly configure your settings.\n";
+        u::text.toLine();
+        u::pause();
+        sort.create(fileName);
+        bufferCheck = true;
     }
 
-    config = config.parseConfigFile(fileName);
-
-    if (config.getSrcDir().empty()) {
-        hUtils::log.Error("Source directory is missing in the config file.");
-        hUtils::pause(check);
+    sort.parse(fileName);
+    if(sort.getSrcDir().empty()) {
+        u::log.Error("Source directory is missing in the config file.");
+        u::pause(bufferCheck);
         return 1;
     }
-    
-    hUtils::text.toLine();
-    fs::path selSrc = pickSrcDir(config);
-    config.buildDestMap(selSrc);
 
-    mainMenu(config, sort, selSrc, fileName);
+    u::text.toLine();
+    fs::path selSrc = pickSrcDir(sort);
+    sort.buildDestMap(selSrc);
 
-    hUtils::text.toLine();
-    hUtils::log.Summary();
-    hUtils::text.toLine();
-    hUtils::pause(true);
+    mainMenu(sort, fileName, selSrc);
+    u::text.toLine();
+    u::log.Summary();
+    u::text.toLine();
+    u::pause(true);
 
     return 0;
 }
