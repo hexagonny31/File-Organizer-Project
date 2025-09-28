@@ -1,13 +1,19 @@
 # Config file for document sorter
-# Source directory where new files will go
-sourceDirectories=C:\Users\ADMIN\Desktop\Test,C:\Users\ADMIN\Desktop\Documents
-# Initial directories scanned at startup
-initialDirectories=C:\Users\ADMIN\Downloads,C:\Users\ADMIN\Desktop,C:\Users\ADMIN\Documents
 
-# Default extension mappings
+# Source directories where new files will go
+srcDir:C:\Users\ADMIN\Desktop\Test
+srcDir:C:\Users\ADMIN\Desktop\Documents
+
+# Initial directories scanned at startup
+initDir:C:\Users\ADMIN\Downloads
+initDir:C:\Users\ADMIN\Desktop
+initDir:C:\Users\ADMIN\Documents
+
+# Allowed extension to be moved and sorted
 extension:.txt=TXT
 extension:.xlsx=XLSX
 extension:.doc=DOCX
+extension:.svg=SVG
 extension:.docx=DOCX
 extension:.pptx=PPTX
 extension:.pdf=PDF
