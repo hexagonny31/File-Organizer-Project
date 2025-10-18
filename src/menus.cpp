@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <unordered_map>
@@ -86,19 +87,25 @@ void printDirectories(const SortAlgo &sort, const fs::path &selSrc) {
         cout << "Initial directories:\n";
         for(const auto &init : sort.getInitDir()) cout << '\t' + init.string() + '\n';
     }
-    else  cout << "Initial Directories : None specified.\n";
+    else cout << "Initial Directories : None specified.\n";
 
     cout << "Source directory:\n";
     for(const auto &src : sort.getSrcDir()) {
         cout << '\t';
-        if(src.string() == selSrc.string()) cout << u::text.bgColor(104) + src.string() + u::text.defaultText();
-        else cout << src.string();
+        std::string srcStr = src.string();
+        if(srcStr == selSrc.string()) cout << u::text.bgColor(104) + srcStr + u::text.defaultText();
+        else cout << srcStr;
         cout << '\n';
     }
 
     if(!sort.getDestMap().empty()) {
+        int pathLen = 0;
+        for(const auto &[extension, destDir] : sort.getDestMap()) {
+            int temp = destDir.string().size();
+            if(temp > pathLen) pathLen = temp;
+        }
         cout << "Destination directories (for extensions):\n";
-        for(const auto &[extension, destDir] : sort.getDestMap()) cout << '\t' + destDir.string() + " -> " + extension + '\n';;
+        for(const auto &[extension, destDir] : sort.getDestMap()) cout << '\t' << std::setw(pathLen) << std::left << destDir.string() << " -> " + extension + '\n';
     }
     else cout << "Destination directories: None specified.\n";
 }
@@ -116,7 +123,7 @@ void mainMenu(SortAlgo &sort, const std::string &fileName, fs::path &selSrc) {
              << "2. Sort files in your documents folder\n"
              << "3. Configure settings\n"
              << "4. Exit.\n\n";
-        choice = validateChoice(1, 4,"Choose action: ");
+        choice = validateChoice(1, 4, "Choose action: ");
         u::text.clearAbove(6);
 
         switch(choice) {
@@ -168,26 +175,26 @@ void mainMenu(SortAlgo &sort, const std::string &fileName, fs::path &selSrc) {
             u::text.clearAbove(8);
 
             switch(choice) {
-                case 1:
-                    selSrc = pickSrcDir(sort);
-                    u::text.clearAbove(lines);
-                    break;
-                case 2:
-                    sort.addDirectory(fileName);
-                    break;
-                case 3:
-                    sort.addExtension(fileName, selSrc);
-                    break;
-                case 4:
-                    sort.removeDirectory(fileName);
-                case 5:
-                    sort.removeExtension(fileName, selSrc);
-                    break;
-                case 6:
-                    cout << "\nOperation Canceled.";
-                    u::sleep(1000);
-                    u::text.clearAbove(2);
-                    break;
+            case 1:
+                selSrc = pickSrcDir(sort);
+                u::text.clearAbove(lines);
+                break;
+            case 2:
+                sort.addDirectory(fileName);
+                break;
+            case 3:
+                sort.addExtension(fileName, selSrc);
+                break;
+            case 4:
+                sort.removeDirectory(fileName);
+            case 5:
+                sort.removeExtension(fileName, selSrc);
+                break;
+            case 6:
+                cout << "\nOperation Canceled.";
+                u::sleep(1000);
+                u::text.clearAbove(2);
+                break;
             }
             break;
         case EXIT:
@@ -197,4 +204,3 @@ void mainMenu(SortAlgo &sort, const std::string &fileName, fs::path &selSrc) {
         }
     } while(choice != EXIT);
 }
-
