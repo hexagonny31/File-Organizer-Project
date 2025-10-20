@@ -13,6 +13,7 @@
 #include <sstream>
 #include <regex>
 #include <iomanip>
+#include "sortAlgo.h"
 
 #ifndef HUTIL_API
 #define HUTIL_API
@@ -20,6 +21,17 @@
 
 constexpr int SCREEN_WIDTH  = 100;
 constexpr int SCREEN_HEIGHT = 30;
+
+// --- MENUS FUNCTIONS ---
+size_t validateChoice(size_t min,
+                      size_t max,
+                      std::string prompt);
+void printDirectories(const SortAlgo &sort,
+                      const std::filesystem::path &selSrc);
+std::filesystem::path pickSrcDir(const SortAlgo &sort);
+void mainMenu   (SortAlgo &sort,
+                 const std::string &fileName,
+                 std::filesystem::path &selSrc);
 
 namespace hUtils {
 

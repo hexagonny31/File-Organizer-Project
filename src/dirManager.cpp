@@ -3,7 +3,6 @@
 
 #include "dirManager.h"
 #include "hutils.h"
-#include "menus.h"
 
 using std::cout;
 using std::string;

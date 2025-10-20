@@ -4,7 +4,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "menus.h"
 #include "hutils.h"
 
 using std::cout;
@@ -105,7 +104,8 @@ void printDirectories(const SortAlgo &sort, const fs::path &selSrc) {
             if(temp > pathLen) pathLen = temp;
         }
         cout << "Destination directories (for extensions):\n";
-        for(const auto &[extension, destDir] : sort.getDestMap()) cout << '\t' << std::setw(pathLen) << std::left << destDir.string() << " -> " + extension + '\n';
+        for(const auto &[extension, destDir] : sort.getDestMap())
+            cout << '\t' << std::setw(pathLen) << std::left << destDir.string() << " -> " + extension + '\n';
     }
     else cout << "Destination directories: None specified.\n";
 }
