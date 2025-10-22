@@ -188,6 +188,8 @@ void Config::removeDirectory(const string &fileName) {
     if(targetDir->max_size() <= 1) {
         u::text.clearAbove(lines);
         u::log.Warning("You only have 1 assigned " + string(((choice == 1) ? "initial" : "source")) + "directory!");
+        hUtils::sleep(1000);
+        return;
     }
 
     cout << "Select the directory to remove:\n";
