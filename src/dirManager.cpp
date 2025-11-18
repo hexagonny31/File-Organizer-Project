@@ -228,7 +228,7 @@ void Config::addExtension(const string &fileName, const fs::path &source) {
     u::log.Action("Generated folder name: ", folderName);
     extKeys[input] = folderName;
 
-    u::log.Action("Checking map...", "");
+    u::log.Action("Checking map...");
     buildDestMap(source);
     rewrite(fileName);
 }
@@ -252,7 +252,7 @@ void Config::removeExtension(const string &fileName, const fs::path &source) {
     string extToRemove = items[removeIndex - 1].first;
     extKeys.erase(extToRemove);
 
-    u::log.Action("Checking map...", "");
+    u::log.Action("Checking map...");
     destMap.clear();
     buildDestMap(source);
     rewrite(fileName);

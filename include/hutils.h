@@ -86,8 +86,8 @@ namespace hUtils {
         int filesMoved = 0, foldersRemoved = 0, foldersCreated = 0, errors = 0, warnings = 0;
     
     public:
-        HUTIL_API void Action     (const std::string& action,
-                                   const std::string& message);
+        HUTIL_API void Action     (const std::string& action  = "",
+                                   const std::string& message = "");
         HUTIL_API void Success    (const std::string& message);
         HUTIL_API void Moved      (const std::string& message); //  filesMoved
         HUTIL_API void Removed    (const std::string& message); //  filesRemoved

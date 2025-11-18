@@ -198,7 +198,7 @@ void mainMenu(SortAlgo &sort, const std::string &fileName, fs::path &selSrc) {
             }
             break;
         case EXIT:
-            u::log.Action("Printing sumary...", "");
+            u::log.Action("Printing sumary...");
             u::sleep(1000);
             return;
         }

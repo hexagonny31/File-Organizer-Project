@@ -17,7 +17,7 @@ int main() {
     const string fileName = "fileSYSman_Config.txt";
     bool bufferCheck = false;
 
-    u::log.Action("Checking if config file exists...", "");
+    u::log.Action("Checking if config file exists...");
     u::sleep(1000);
     if(!fs::exists(fileName)) {
         u::log.Error("Config file does not exists!");
