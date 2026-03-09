@@ -11,6 +11,32 @@ namespace hUtils {
 
     Text text;
 
+    void Text::reject(const string& msg)
+    {
+        std::cout << msg;
+        hUtils::Sleep(2000);
+        text.clearAll();
+    }
+    void Text::reject(const string& msg, int lines)
+    {
+        std::cout << msg;
+        hUtils::Sleep(2000);
+        text.clearAbove(lines);
+    }
+
+    void Text::trim(string& text)
+    {
+        const string whitespace = " \t\n\r\f\v";
+        size_t first = text.find_first_not_of(whitespace);
+        if(std::string::npos == first) {
+            text.clear();
+            return;
+        }
+        size_t last = text.find_last_not_of(whitespace);
+        text.erase(0, first);
+        text.erase(last - first + 1);
+    }
+
     void Text::toLine(char character)
     {
         cout << string(SCREEN_WIDTH - 1, character) << '\n';
@@ -22,9 +48,7 @@ namespace hUtils {
         int padding = (appliedScreenWidth - text.length()) / 2;
         if(padding < 0) padding = 0;
 
-        if (number >= 1) {
-            text = std::to_string(number) + ". " + text;
-        }
+        if(number >= 1) text = std::to_string(number) + ". " + text;
     
         cout << fgColor(colorCode, use256)
              << std::string(padding, ' ')
@@ -43,11 +67,7 @@ namespace hUtils {
     void Text::toLeft(string text, int colorCode, int number, bool use256)
     {
         cout << fgColor(colorCode, use256);
-
-        if(number >= 1){
-            text = std::to_string(number) + ". " + text;
-        }
-
+        if(number >= 1) text = std::to_string(number) + ". " + text;
         cout << text << '\n'
              << defaultText();
     }
@@ -68,35 +88,28 @@ namespace hUtils {
     {
         if(use256){
             // 256-color mode (0-255)
-            if (textColor >= 0 && textColor <= 255){
+            if(textColor >= 0 && textColor <= 255)
                 return "\033[38;5;" + std::to_string(textColor) + "m";
-            }
         } 
         else{
             // Standard ANSI 16 colors
-            if ((textColor >= 30 && textColor <= 37) || (textColor >= 90 && textColor <= 97)){
+            if((textColor >= 30 && textColor <= 37) || (textColor >= 90 && textColor <= 97))
                 return "\033[" + std::to_string(textColor) + "m";
-            }
         }
-    
         return "";
     }
 
     string Text::bgColor(int textColor, bool use256)
     {
-        if(use256){
+        if(use256) {
             // 256-color mode (0-255)
-            if (textColor >= 0 && textColor <= 255){
+            if(textColor >= 0 && textColor <= 255)
                 return "\033[48;5;" + std::to_string(textColor) + "m";
-            }
-        }
-        else{
+        } else {
             // Standard ANSI 16 colors
-            if ((textColor >= 40 && textColor <= 47) || (textColor >= 100 && textColor <= 107)){
+            if((textColor >= 40 && textColor <= 47) || (textColor >= 100 && textColor <= 107))
                 return "\033[" + std::to_string(textColor) + "m";
-            }
         }
-
         return "";
     }
 
@@ -105,8 +118,9 @@ namespace hUtils {
         return "\033[0m";
     }
 
-    void Text::clearAll()
+    void Text::clearAll(int delay)
     {
+        hUtils::Sleep(delay);
     #ifdef _WIN32
         if(std::getenv("TERM")){ 
             // Use ANSI escape codes if the terminal supports it
@@ -126,10 +140,13 @@ namespace hUtils {
         cout << "\033[J";
     }
 
-    void Text::clearAbove(int line) {
-        cout << "\033[2K";
+    void Text::clearAbove(int line, bool clrBaseIdx) {
+        if(clrBaseIdx) cout << "\033[2K";
+        
         for (int i = 0; i < line; i++) {
-            cout << "\033[1A" << "\033[G" << "\033[2K";
+            cout << "\033[1A"  //  Move cursor up one line.
+                 << "\033[G"   //  Move cursor to column 1 (leftmost).
+                 << "\033[2K"; //  Clear the entire line.
         }
         cout.flush();
     }

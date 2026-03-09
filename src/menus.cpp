@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "hutils.h"
+#include "sortAlgo.h"
 
 using std::cout;
 using std::string;
@@ -16,27 +17,6 @@ enum {
     CONFIGURE = 3,
     EXIT = 4
 };
-
-size_t validateChoice(size_t min, size_t max, string prompt) {
-    size_t choice = -1;
-    string input;
-    do {
-        cout << u::text.fgColor(93) << prompt << u::text.defaultText();
-        std::getline(std::cin, input);
-        try {
-            choice = std::stoi(input);
-        } catch(...) {
-            choice = 0;
-        }
-        //  Do not change!! This is neccessary and it will break if you try to fix it.
-        if(choice < min || choice > max) {
-            cout << "\nInvalid choice! Please try again!";
-            u::sleep(2000);
-            u::text.clearAbove(2);
-        }
-    } while(choice < min || choice > max);
-    return choice;
-}
 
 bool proceed() {
     char choice;
@@ -51,7 +31,7 @@ bool proceed() {
 
         if(choice != 'y' && choice != 'n') {
             cout << "\n\nInvalid choice! Please try again!";
-            u::sleep(2000);
+            u::Sleep(2000);
             u::text.clearAbove(3);
         }
     } while(choice != 'y' && choice != 'n');
@@ -66,11 +46,11 @@ fs::path pickSrcDir(const SortAlgo &sort) {
     if(sort.getSrcDir().size() > 1) {
         size_t choice = -1;
         cout << "You currently have multiple source directories assigned.\n";
-        u::sleep(1000);
+        u::Sleep(1000);
 
         cout << "Please pick which folder you want to sort:\n";
         for(size_t i = 0; i < sort.getSrcDir().size(); ++i) cout << '\t' + std::to_string((i + 1)) + " -> " + sort.getSrcDir(i).string() + '\n';
-        choice = validateChoice(1, sort.getSrcDir().size(), "Choose action: ");
+        choice = u::GetIntegerInput("Choose action: ", 1, sort.getSrcDir().size());
         index = choice - 1;
         u::text.clearAbove(lines);
     }
@@ -123,7 +103,7 @@ void mainMenu(SortAlgo &sort, const std::string &fileName, fs::path &selSrc) {
              << "2. Sort files in your documents folder\n"
              << "3. Configure settings\n"
              << "4. Exit.\n\n";
-        choice = validateChoice(1, 4, "Choose action: ");
+        choice = u::GetIntegerInput("Choose action: ", 1, 4);
         u::text.clearAbove(6);
 
         switch(choice) {
@@ -138,7 +118,7 @@ void mainMenu(SortAlgo &sort, const std::string &fileName, fs::path &selSrc) {
                  << "3. Remove extension folders\n"
                  << "4. Remove alphabetical folders\n"
                  << "5. Cancel\n\n";
-            choice = validateChoice(1, 5, "Choose action: ");
+            choice = u::GetIntegerInput("Choose action: ", 1, 5);
             u::text.clearAbove(7);
 
             switch(choice) {
@@ -159,7 +139,7 @@ void mainMenu(SortAlgo &sort, const std::string &fileName, fs::path &selSrc) {
                 sort.removeAlph(selSrc);
             case 5:
                 cout << "\nOperation Canceled.";
-                u::sleep(1000);
+                u::Sleep(1000);
                 u::text.clearAbove(2 + lines);
                 break;
             }
@@ -171,7 +151,7 @@ void mainMenu(SortAlgo &sort, const std::string &fileName, fs::path &selSrc) {
                  << "4. Remove directory\n"
                  << "5. Remove extension\n"
                  << "6. Cancel\n\n";
-            choice = validateChoice(1, 6, "Choose action: ");
+            choice = u::GetIntegerInput("Choose action: ", 1, 6);
             u::text.clearAbove(8);
 
             switch(choice) {
@@ -192,14 +172,14 @@ void mainMenu(SortAlgo &sort, const std::string &fileName, fs::path &selSrc) {
                 break;
             case 6:
                 cout << "\nOperation Canceled.";
-                u::sleep(1000);
+                u::Sleep(1000);
                 u::text.clearAbove(2);
                 break;
             }
             break;
         case EXIT:
             u::log.Action("Printing sumary...");
-            u::sleep(1000);
+            u::Sleep(1000);
             return;
         }
     } while(choice != EXIT);

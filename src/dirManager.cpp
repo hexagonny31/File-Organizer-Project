@@ -20,19 +20,19 @@ void Config::create(const string &fileName) {
     for(size_t i = 0; i < labels.size(); ++i) {
         do {
             cout << "Enter your " << labels[i] << " path: ";
-            std::cin >> paths[i];
+            paths[i] = u::GetStringInput("", 5, 260);
 
             if(!exists(paths[i]) || !is_directory(paths[i])) {
                 cout << "Path does not exists or is not a directory.\n";
                 paths[i].clear();
-                u::pause(true);
+                u::Pause(true);
                 u::text.clearAbove(3);
             }
         } while(paths[i].empty());
     }
     u::log.Success("\nDirectory Accepted:");
     for(const auto &path : paths) cout << '\t' << path.string() << '\n';
-    u::sleep(2000);
+    u::Sleep(2000);
 
     std::ofstream file(fileName);
     if(!file.is_open()) {
@@ -121,7 +121,7 @@ void Config::addDirectory(const string &fileName) {
 
         if(input == "E") {
             cout << "\nOperation canceled";
-            u::sleep(1000);
+            u::Sleep(1000);
             u::text.clearAbove(2 + lines);
             return;
         }
@@ -129,7 +129,7 @@ void Config::addDirectory(const string &fileName) {
         newPath = input;
         if(!fs::exists(newPath) || !fs::is_directory(newPath)) {
             std::cout << "\nThe specified path does not exits or is not a directory";
-            u::sleep(1000);
+            u::Sleep(1000);
             u::text.clearAbove(2);
         }
     } while(!fs::exists(newPath) || !fs::is_directory(newPath));
@@ -139,7 +139,7 @@ void Config::addDirectory(const string &fileName) {
          << "1. Initial Directories\n"
          << "2. Source Directories\n"
          << "3. Cancel\n\n";
-    size_t choice = validateChoice(1, 4, "Choose action: ");
+    size_t choice = u::GetIntegerInput("Choose action: ", 1, 3);
 
     switch(choice) {
     case 1:
@@ -150,7 +150,7 @@ void Config::addDirectory(const string &fileName) {
         break;
     case 3:
         cout << "\nOperation canceled";
-        u::sleep(1000);
+        u::Sleep(1000);
         u::text.clearAbove(8 + lines);
         return;
     }
@@ -166,7 +166,7 @@ void Config::removeDirectory(const string &fileName) {
          << "1. Initial Directories\n"
          << "2. Source Directories\n"
          << "3. Cancel\n\n";
-    size_t choice = validateChoice(1, 3, "Choose action: ");
+    size_t choice = u::GetIntegerInput("Choose action: ", 1, 3);
     u::text.clearAbove(6);
 
     std::vector<fs::path> *targetDir = nullptr;
@@ -180,7 +180,7 @@ void Config::removeDirectory(const string &fileName) {
         break;
     case 3:
         cout << "Operation canceled";
-        u::sleep(1000);
+        u::Sleep(1000);
         u::text.clearAbove(1 + lines);
         return;
     }
@@ -188,13 +188,13 @@ void Config::removeDirectory(const string &fileName) {
     if(targetDir->max_size() <= 1) {
         u::text.clearAbove(lines);
         u::log.Warning("You only have 1 assigned " + string(((choice == 1) ? "initial" : "source")) + "directory!");
-        hUtils::sleep(1000);
+        hUtils::Sleep(1000);
         return;
     }
 
     cout << "Select the directory to remove:\n";
     for(size_t i = 0; i < targetDir->size(); ++i) cout << std::to_string((i + 1)) + ". " + (*targetDir)[i].string() + '\n';
-    int removeIndex = validateChoice(1, targetDir->size(), "\nEnter the number of the directory to remove: ");
+    int removeIndex = u::GetIntegerInput("\nEnter the number of the directory to remove: ", 1, targetDir->size());
     u::text.clearAbove(lines + 3 + targetDir->size());
 
     fs::path removed = (*targetDir)[removeIndex - 1];
@@ -214,7 +214,7 @@ void Config::addExtension(const string &fileName, const fs::path &source) {
 
     if(input == "E") {
         cout << "\nOperation canceled";
-        u::sleep(1000);
+        u::Sleep(1000);
         u::text.clearAbove(2 + lines);
         return;
     }
@@ -240,16 +240,16 @@ void Config::removeExtension(const string &fileName, const fs::path &source) {
     if(extKeys.max_size() <= 1) {
         u::text.clearAbove(lines);
         u::log.Warning("You only have 1 assigned extension!");
-        u::sleep(1000);
+        u::Sleep(1000);
         return;
     }
 
     cout << "Select the extension to remove:\n";
     for(size_t i = 0; i < items.size(); ++i) cout << std::to_string((i + 1)) + ". [" + items[i].first + "] [" + items[i].second + "]\n";
-    int removeIndex = static_cast<int>(validateChoice(1, items.size(), "\nEnter the number of the extension to remove: "));
+    int removeIndex = u::GetIntegerInput("\nEnter the number of the extension to remove: ", 1, items.size());
     u::text.clearAbove(3 + items.size() + lines);
 
-    string extToRemove = items[removeIndex - 1].first;
+    string extToRemove = items[(size_t)removeIndex - 1].first;
     extKeys.erase(extToRemove);
 
     u::log.Action("Checking map...");
