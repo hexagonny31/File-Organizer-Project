@@ -1,0 +1,5 @@
+.vscode
+build
+test.cpp
+.old
+.settings.json
