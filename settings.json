@@ -3,6 +3,7 @@
         "C:\\Users\\sabur\\Documents\\GitHub\\MinecraftConsoles\\x64\\Debug"
     ],
     "sorting_rules": [
-        ["folder_name", [".pdf",".docx"]]
+        ["Documents", [".pdf", ".docx"]],
+        ["Images", [".jpg", ".png", ".gif"]]
     ]
 }
