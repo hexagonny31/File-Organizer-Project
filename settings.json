@@ -1,3 +1,8 @@
-[
-    "C:\\Users\\sabur\\Documents\\GitHub\\MinecraftConsoles\\x64\\Debug"
-]
+{
+    "search_roots": [
+        "C:\\Users\\sabur\\Documents\\GitHub\\MinecraftConsoles\\x64\\Debug"
+    ],
+    "sorting_rules": [
+        ["folder_name", [".pdf",".docx"]]
+    ]
+}
