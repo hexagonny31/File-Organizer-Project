@@ -20,11 +20,10 @@ class MainWindow(QWidget):
         
         self.labels = [QLabel("Manage Search Roots:"), QLabel("Select Target Path:"), QLabel("Sorting Rules:")]
         self.browse_buttons = [QPushButton("Browse..."), QPushButton("Browse...")]
-        self.add_buttons = [QPushButton("Add"), QPushButton("Add"), QPushButton("Move Files")]
+        self.add_buttons = [QPushButton("Add"), QPushButton("Add"), QPushButton("&Move Files")]
         self.remove_buttons = [QPushButton("Remove"), QPushButton("Remove")]
         self.path_inputs = [QLineEdit(), QLineEdit()]
-        self.sort_action = QAction("Sort Files")
-        self.unsort_action = QAction("Unsort Files")
+        self.ui_actions = [QAction("Sort Files"), QAction("Unsort Files")]
         
         self.loadData()
         self.initUI()
@@ -66,7 +65,6 @@ class MainWindow(QWidget):
         main_layout.addLayout(self.rootPathsLayout()) # where you add/remove search roots.
         main_layout.addLayout(self.targetPathsLayout())
         main_layout.addLayout(self.sortingSettingsLayout()) # where you set the sorting rules.
-        main_layout.addLayout(self.actionButtonsLayout())
         self.setLayout(main_layout)
 
         for lbl in self.labels:
@@ -86,8 +84,9 @@ class MainWindow(QWidget):
         self.remove_buttons[1].clicked.connect(self.removeTableRow)
         self.add_buttons[2].clicked.connect(lambda: sort.to_src_dir(self.target, self.roots, self.runtime_map))
         self.table.itemChanged.connect(self.updateTuples)
-        self.sort_action.triggered.connect(lambda: self.handle_action("Sort"))
-        self.unsort_action.triggered.connect(lambda: self.handle_action("Unsort"))
+        
+        self.ui_actions[0].triggered.connect(lambda: self.handleAction("Sort"))
+        self.ui_actions[1].triggered.connect(lambda: self.handleAction("Unsort"))
         
         for path_obj in self.roots:
             self.combo_box.addItem(str(path_obj))
@@ -226,6 +225,12 @@ class MainWindow(QWidget):
     def sortingSettingsLayout(self):
         sort_rules_manager = QHBoxLayout()
         
+        self.confirm_btn = QPushButton("Choose Action...")
+        action_menu = QMenu(self)
+        action_menu.addActions([self.ui_actions[0], self.ui_actions[1]])
+        self.confirm_btn.setMenu(action_menu)
+        
+        sort_rules_manager.addWidget(self.confirm_btn)
         sort_rules_manager.addWidget(self.add_buttons[1])
         sort_rules_manager.addWidget(self.remove_buttons[1])
         
@@ -242,28 +247,6 @@ class MainWindow(QWidget):
         sort_rules_layout_container.addLayout(sort_rules_manager)
         sort_rules_layout_container.addWidget(self.table)
         return sort_rules_layout_container
-    
-    def actionButtonsLayout(self):
-        sort_layout = QHBoxLayout()
-        self.sort_group = QGroupBox("Sorting actions")
-        self.sort_dropdown = QComboBox()
-        self.sort_dropdown.addItems(["By Name", "By Date", "By Size", "By Extension"])
-        self.sort_dropdown.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sort_layout.addWidget(self.sort_dropdown)
-        
-        self.confirm_btn = QPushButton("Choose Action...")
-        
-        action_menu = QMenu(self)
-        action_menu.addActions([self.sort_action, self.unsort_action])
-        
-        self.confirm_btn.setMenu(action_menu)
-        sort_layout.addWidget(self.confirm_btn)
-        self.sort_group.setLayout(sort_layout)
-        
-        actions_panel = QVBoxLayout()
-        actions_panel.addWidget(self.sort_group)
-        
-        return actions_panel
     
 app = QApplication([])
 app.setStyle("windows")
