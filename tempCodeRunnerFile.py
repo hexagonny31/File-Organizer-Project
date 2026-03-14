@@ -1,0 +1,1 @@
+self.target = Path(data["target"])

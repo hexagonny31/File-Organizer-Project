@@ -151,6 +151,9 @@ PYBIND11_MODULE(file_sorter, m) {
     m.def("move_file", &moveFile,
           "Move a file to a destination directory",
           py::arg("entry"), py::arg("destination"));
+    m.def("to_src_dir", &toSrcDir,
+          "Move files to a targeted source directory",
+          py::arg("src"), py::arg("init_dir"), py::arg("dest_map"));
     m.def("by_ext", &byExt,
           "Sort files by extension",
           py::arg("src"), py::arg("dest_map"));

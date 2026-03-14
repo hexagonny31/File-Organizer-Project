@@ -1,9 +1,41 @@
 {
     "search_roots": [
-        "C:\\Users\\sabur\\Documents\\GitHub\\MinecraftConsoles\\x64\\Debug"
+        "C:\\Users\\sabur\\Downloads",
+        "C:\\Users\\sabur\\Desktop",
+        "C:\\Users\\sabur\\Documents"
     ],
+    "target": "C:\\Users\\sabur\\Desktop\\Documents",
     "sorting_rules": [
-        ["Documents", [".pdf", ".docx"]],
-        ["Images", [".jpg", ".png", ".gif"]]
+        [
+            "PDF",
+            [
+                ".pdf"
+            ]
+        ],
+        [
+            "DOCX",
+            [
+                ".docx",
+                ".doc"
+            ]
+        ],
+        [
+            "SVG",
+            [
+                ".svg"
+            ]
+        ],
+        [
+            "PPTX",
+            [
+                ".pptx"
+            ]
+        ],
+        [
+            "XLSX",
+            [
+                ".xlsx"
+            ]
+        ]
     ]
 }
