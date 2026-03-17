@@ -41,18 +41,22 @@ jobs:
 
     - name: Compile C++ Backend
       run: |
-        PYTHON_INC=$(python -c "from sysconfig import get_paths; print(get_paths()['include'])")
-        PYBIND_INC="extern/pybind11/include"
-        
-        FLAGS="-O3 -Wall -shared -std=c++17 -fPIC -I$PYBIND_INC -I$PYTHON_INC"
-        
-        if [ "$RUNNER_OS" == "macOS" ]; then
-          FLAGS="$FLAGS -undefined dynamic_lookup"
-        fi
-        
-        g++ $FLAGS sortAlgo.cpp -o file_sorter.${{ matrix.backend_ext }}
-
-        if [ "$RUNNER_OS" != "Windows" ]; then
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          PYTHON_INC=$(python -c "from sysconfig import get_paths; print(get_paths()['include'])")
+          PYBIND_INC="extern/pybind11/include"
+          PYTHON_LIB=$(python -c "import sys; import sysconfig; from pathlib import Path; v=sys.version_info; lib=Path(sys.exec_prefix) / 'libs' / f'python{v.major}{v.minor}.lib'; print(lib if lib.exists() else '')")
+          if [ ! -f "$PYTHON_LIB" ]; then
+            echo "::warning file=sortAlgo.cpp::Python .lib not found, ensure Python development libraries are present."
+          fi
+          g++ -O3 -Wall -shared -std=c++17 -I"$PYBIND_INC" -I"$PYTHON_INC" -DNOMINMAX -DWIN32 -D_WINDOWS -Wl,--out-implib,file_sorter.lib -o file_sorter.pyd sortAlgo.cpp -L"$(dirname "$PYTHON_LIB")" -l:$(basename "$PYTHON_LIB")
+        else
+          PYTHON_INC=$(python -c "from sysconfig import get_paths; print(get_paths()['include'])")
+          PYBIND_INC="extern/pybind11/include"
+          FLAGS="-O3 -Wall -shared -std=c++17 -fPIC -I$PYBIND_INC -I$PYTHON_INC"
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            FLAGS="$FLAGS -undefined dynamic_lookup"
+          fi
+          g++ $FLAGS sortAlgo.cpp -o file_sorter.${{ matrix.backend_ext }}
           chmod +x file_sorter.${{ matrix.backend_ext }}
         fi
       shell: bash 
