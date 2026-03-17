@@ -1,11 +1,22 @@
 import file_sorter as sort
 import json
+import os
+import sys
 from functools import partial
 from pathlib import Path
 from PyQt6.QtWidgets import (QApplication, QHeaderView, QPushButton, QLineEdit, QTableWidgetItem, QMenu, QWidget, QLabel, QSizePolicy,
                              QVBoxLayout, QHBoxLayout, QTableWidget, QComboBox, QMessageBox, QFileDialog, QGroupBox)
 from PyQt6.QtGui import QIcon, QAction, QDesktopServices
 from PyQt6.QtCore import QUrl
+
+def resourcePath(relative_path):
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -59,7 +70,7 @@ class MainWindow(QWidget):
         
     def initUI(self):
         self.setWindowTitle("File Organizer Project")
-        self.setWindowIcon(QIcon("lain.ico"))
+        self.setWindowIcon(QIcon(resourcePath("lain.ico")))
         self.setFixedSize(700, 550) # width, height
         
         main_layout = QVBoxLayout()
