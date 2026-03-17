@@ -6,8 +6,8 @@ on:
 
 jobs:
   build:
-    # This matrix tells GitHub to run this entire job 3 times
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
         include:
@@ -40,7 +40,7 @@ jobs:
     - name: Compile C++ Backend
       run: |
         # Cross-platform compilation command
-        g++ -O3 -Wall -shared -std=c++17 -fPIC $(python -m pybind11 --includes) file_sorter.cpp -o file_sorter.${{ matrix.backend_ext }}
+        g++ -O3 -Wall -shared -std=c++17 -fPIC $(python -m pybind11 --includes) sortAlgo.cpp -o file_sorter.${{ matrix.backend_ext }}
 
     - name: Build with PyInstaller
       run: |
