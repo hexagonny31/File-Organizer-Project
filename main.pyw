@@ -4,7 +4,8 @@ from functools import partial
 from pathlib import Path
 from PyQt6.QtWidgets import (QApplication, QHeaderView, QPushButton, QLineEdit, QTableWidgetItem, QMenu, QWidget, QLabel, QSizePolicy,
                              QVBoxLayout, QHBoxLayout, QTableWidget, QComboBox, QMessageBox, QFileDialog, QGroupBox)
-from PyQt6.QtGui import QIcon, QAction
+from PyQt6.QtGui import QIcon, QAction, QDesktopServices
+from PyQt6.QtCore import QUrl
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -22,6 +23,7 @@ class MainWindow(QWidget):
         self.browse_buttons = [QPushButton("Browse..."), QPushButton("Browse...")]
         self.add_buttons = [QPushButton("Add"), QPushButton("Add"), QPushButton("&Move Files")]
         self.remove_buttons = [QPushButton("Remove"), QPushButton("Remove")]
+        self.open_button = QPushButton("Open Folder")
         self.path_inputs = [QLineEdit(), QLineEdit()]
         self.ui_actions = [QAction("Sort Files"), QAction("Unsort Files")]
         
@@ -82,6 +84,7 @@ class MainWindow(QWidget):
         self.path_inputs[1].textChanged.connect(self.updateTargetPath)
         self.add_buttons[1].clicked.connect(self.addTableRow)
         self.remove_buttons[1].clicked.connect(self.removeTableRow)
+        self.open_button.clicked.connect(lambda: self.openFolder(self.target))
         self.add_buttons[2].clicked.connect(lambda: sort.to_src_dir(self.target, self.roots, self.runtime_map))
         self.table.itemChanged.connect(self.updateTuples)
         
@@ -111,6 +114,10 @@ class MainWindow(QWidget):
         self.target = path_obj
         self.runtime_map = sort.build_dest_map(self.target, self.runtime_keys)
         self.saveData()
+
+    def openFolder(self, path):
+        abs_path = str(Path(path).absolute())
+        QDesktopServices.openUrl(QUrl.fromLocalFile(abs_path))
 
     def browseFolder(self, index):
         folder_selected = QFileDialog.getExistingDirectory(self, "Select Directory")
@@ -183,6 +190,12 @@ class MainWindow(QWidget):
         else:
             QMessageBox.information(self, "Selection Required", "Please click a row to delete.")
 
+    def handleAction(self, action):
+        if action == "Sort":
+            sort.by_ext(self.target, self.runtime_map)
+        else:
+            sort.remove_ext(self.target, self.runtime_map)    
+
     def rootPathsLayout(self):
         root_layout_add = QHBoxLayout() # source directory add layout
         
@@ -212,6 +225,7 @@ class MainWindow(QWidget):
         self.path_inputs[1].setPlaceholderText("Add a target path...")
         
         target_layout.addWidget(self.path_inputs[1])
+        target_layout.addWidget(self.open_button)
         target_layout.addWidget(self.add_buttons[2])
         target_layout.addWidget(self.browse_buttons[1])
         
