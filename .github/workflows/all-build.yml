@@ -37,7 +37,7 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pybind11 pyqt6 pyinstaller
+        pip install pybind11 pyqt6 pyinstaller pillow
 
     - name: Compile C++ Backend (Windows)
       if: runner.os == 'Windows'
@@ -51,16 +51,18 @@ jobs:
           Write-Host "Python .lib not found: $PYTHON_LIB"
           Exit 1
         }
-        $VCVARS = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        if (-not (Test-Path $VCVARS)) {
-          $VCVARS = "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-        }
-        if (-not (Test-Path $VCVARS)) {
-          Write-Host "vcvars64.bat not found!"
+        $vs2022Paths = @(
+          "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat",
+          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat",
+          "C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Auxiliary\Build\vcvars64.bat"
+        )
+        $vcvars = $vs2022Paths | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if (-not $vcvars) {
+          Write-Host "vcvars64.bat not found in any expected VS2022 installation location."
           Exit 1
         }
-        $compile = "cl /LD /EHsc /I`"$PYTHON_INCLUDE`" /I`"$PYBIND11_INCLUDE`" sortAlgo.cpp /Fe:file_sorter.pyd `"$PYTHON_LIB`""
-        cmd /c "`"$VCVARS`" && $compile"
+        $CLFLAGS = "/LD /EHsc /std:c++17 /I$PYTHON_INCLUDE /I$PYBIND11_INCLUDE sortAlgo.cpp /Fe:file_sorter.pyd $PYTHON_LIB"
+        cmd /c "`"$vcvars`" && cl $CLFLAGS"
       shell: pwsh
 
     - name: Compile C++ Backend (Linux/macOS)
@@ -79,9 +81,9 @@ jobs:
     - name: Build with PyInstaller
       run: |
         if [ "$RUNNER_OS" == "Windows" ]; then
-          pyinstaller --noconsole --onefile --add-data "file_sorter.pyd;." --add-data "lain.ico;." main.pyw
+          pyinstaller --noconsole --onefile --icon=lain.ico --add-data "file_sorter.pyd;." --add-data "lain.ico;." fileSYSman.py
         else
-          pyinstaller --noconsole --onefile --add-data "file_sorter.so:." --add-data "lain.ico:." main.pyw
+          pyinstaller --noconsole --onefile --icon=lain.ico --add-data "file_sorter.so:." --add-data "lain.ico:." fileSYSman.py
         fi
       shell: bash
 
@@ -89,4 +91,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}-build
-        path: dist/main* # Captures the executable regardless of extension
+        path: dist/fileSYSman* # Captures the executable regardless of extension
