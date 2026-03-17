@@ -26,6 +26,8 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -39,12 +41,24 @@ jobs:
 
     - name: Compile C++ Backend
       run: |
-        # Cross-platform compilation command
-        g++ -O3 -Wall -shared -std=c++17 -fPIC $(python -m pybind11 --includes) sortAlgo.cpp -o file_sorter.${{ matrix.backend_ext }}
+        PYTHON_INC=$(python -c "from sysconfig import get_paths; print(get_paths()['include'])")
+        PYBIND_INC="extern/pybind11/include"
+        
+        FLAGS="-O3 -Wall -shared -std=c++17 -fPIC -I$PYBIND_INC -I$PYTHON_INC"
+        
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          FLAGS="$FLAGS -undefined dynamic_lookup"
+        fi
+        
+        g++ $FLAGS sortAlgo.cpp -o file_sorter.${{ matrix.backend_ext }}
+
+        if [ "$RUNNER_OS" != "Windows" ]; then
+          chmod +x file_sorter.${{ matrix.backend_ext }}
+        fi
+      shell: bash 
 
     - name: Build with PyInstaller
       run: |
-        # Use different separators for Windows (;) and Unix (:)
         if [ "$RUNNER_OS" == "Windows" ]; then
           pyinstaller --noconsole --onefile --add-data "file_sorter.pyd;." --add-data "lain.ico;." main.pyw
         else
