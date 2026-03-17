@@ -51,7 +51,16 @@ jobs:
           Write-Host "Python .lib not found: $PYTHON_LIB"
           Exit 1
         }
-        cl /LD /EHsc /I"$PYTHON_INCLUDE" /I"$PYBIND11_INCLUDE" sortAlgo.cpp /Fe:file_sorter.pyd "$PYTHON_LIB"
+        $VCVARS = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        if (-not (Test-Path $VCVARS)) {
+          $VCVARS = "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+        }
+        if (-not (Test-Path $VCVARS)) {
+          Write-Host "vcvars64.bat not found!"
+          Exit 1
+        }
+        $compile = "cl /LD /EHsc /I`"$PYTHON_INCLUDE`" /I`"$PYBIND11_INCLUDE`" sortAlgo.cpp /Fe:file_sorter.pyd `"$PYTHON_LIB`""
+        cmd /c "`"$VCVARS`" && $compile"
       shell: pwsh
 
     - name: Compile C++ Backend (Linux/macOS)
