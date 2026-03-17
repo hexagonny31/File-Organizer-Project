@@ -39,27 +39,33 @@ jobs:
         python -m pip install --upgrade pip
         pip install pybind11 pyqt6 pyinstaller
 
-    - name: Compile C++ Backend
+    - name: Compile C++ Backend (Windows)
+      if: runner.os == 'Windows'
       run: |
-        if [ "$RUNNER_OS" == "Windows" ]; then
-          PYTHON_INC=$(python -c "from sysconfig import get_paths; print(get_paths()['include'])")
-          PYBIND_INC="extern/pybind11/include"
-          PYTHON_LIB=$(python -c "import sys; import sysconfig; from pathlib import Path; v=sys.version_info; lib=Path(sys.exec_prefix) / 'libs' / f'python{v.major}{v.minor}.lib'; print(lib if lib.exists() else '')")
-          if [ ! -f "$PYTHON_LIB" ]; then
-            echo "::warning file=sortAlgo.cpp::Python .lib not found, ensure Python development libraries are present."
-          fi
-          g++ -O3 -Wall -shared -std=c++17 -I"$PYBIND_INC" -I"$PYTHON_INC" -DNOMINMAX -DWIN32 -D_WINDOWS -Wl,--out-implib,file_sorter.lib -o file_sorter.pyd sortAlgo.cpp -L"$(dirname "$PYTHON_LIB")" -l:$(basename "$PYTHON_LIB")
-        else
-          PYTHON_INC=$(python -c "from sysconfig import get_paths; print(get_paths()['include'])")
-          PYBIND_INC="extern/pybind11/include"
-          FLAGS="-O3 -Wall -shared -std=c++17 -fPIC -I$PYBIND_INC -I$PYTHON_INC"
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            FLAGS="$FLAGS -undefined dynamic_lookup"
-          fi
-          g++ $FLAGS sortAlgo.cpp -o file_sorter.${{ matrix.backend_ext }}
-          chmod +x file_sorter.${{ matrix.backend_ext }}
+        $PYTHON_INCLUDE = python -c "from sysconfig import get_paths; print(get_paths()['include'])"
+        $PYBIND11_INCLUDE = "extern/pybind11/include"
+        $PythonVersion = python -c "import sys; print(f'{sys.version_info.major}{sys.version_info.minor}')"
+        $PYTHON_LIBDIR = python -c "import sys; import pathlib; print(pathlib.Path(sys.exec_prefix) / 'libs')"
+        $PYTHON_LIB = Join-Path $PYTHON_LIBDIR "python$PythonVersion.lib"
+        if (-not (Test-Path $PYTHON_LIB)) {
+          Write-Host "Python .lib not found: $PYTHON_LIB"
+          Exit 1
+        }
+        cl /LD /EHsc /I"$PYTHON_INCLUDE" /I"$PYBIND11_INCLUDE" sortAlgo.cpp /Fe:file_sorter.pyd "$PYTHON_LIB"
+      shell: pwsh
+
+    - name: Compile C++ Backend (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        PYTHON_INC=$(python -c "from sysconfig import get_paths; print(get_paths()['include'])")
+        PYBIND_INC="extern/pybind11/include"
+        FLAGS="-O3 -Wall -shared -std=c++17 -fPIC -I$PYBIND_INC -I$PYTHON_INC"
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          FLAGS="$FLAGS -undefined dynamic_lookup"
         fi
-      shell: bash 
+        g++ $FLAGS sortAlgo.cpp -o file_sorter.${{ matrix.backend_ext }}
+        chmod +x file_sorter.${{ matrix.backend_ext }}
+      shell: bash
 
     - name: Build with PyInstaller
       run: |
