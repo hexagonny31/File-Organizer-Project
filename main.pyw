@@ -261,7 +261,7 @@ class MainWindow(QWidget):
         sort_rules_layout_container.addLayout(sort_rules_manager)
         sort_rules_layout_container.addWidget(self.table)
         return sort_rules_layout_container
-    
+
 app = QApplication([])
 app.setStyle("windows")
 window = MainWindow()
