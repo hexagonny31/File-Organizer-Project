@@ -5,17 +5,38 @@
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
+#include <functional>
 
+using namespace std::string_literals;
 namespace py = pybind11;
 namespace fs = std::filesystem;
+
+std::function<void(const std::string&)> py_log_info;
+std::function<void(const std::string&)> py_log_error;
+std::function<void(const std::string&)> py_log_warn;
+
+void logInfo(const std::string &m) {
+    if(py_log_info) py_log_info(m);
+    else std::cout << "[INFO] " << m << std::endl;
+}
+
+void logError(const std::string &m) {
+    if(py_log_error) py_log_error(m);
+    else std::cerr << "[ERROR] " << m << std::endl;
+}
+
+void logWarning(const std::string &m) {
+    if(py_log_warn) py_log_warn(m);
+    else std::cout << "[WARNING] " << m << std::endl;
+}
 
 std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, const std::unordered_map<std::string, std::string> keys) {
     std::unordered_map<std::string, fs::path> dest_map;
     for(const auto &[extension, folder] : keys) {
         fs::path temp = src / folder;
         dest_map[extension] = temp;
-        if(dest_map.find(extension) != dest_map.end()) std::cout << "Mapped: " << extension << " to " << temp.string() << std::endl;
-        else std::cerr << "Failed to map: " << extension << std::endl;
+        if(dest_map.find(extension) != dest_map.end()) logInfo("Mapped: "s + extension + " to "s + temp.string());
+        else logError("Failed to map: "s + extension);
     }
     return dest_map;
 }
@@ -24,11 +45,9 @@ void moveFile(const fs::path &entry, fs::path destination) {
     destination = destination / entry.filename();
     try {
         rename(entry, destination);
-        std::cout << "Moved: " << destination.string() 
-                  << "\nTo: " << entry.string() << std::endl;
+        logInfo("Moved: "s + destination.string());
     } catch(const fs::filesystem_error &e) {
-        std::cerr << "Failed to move " << entry.string() 
-                  << ": " << e.what() << std::endl;
+        logError("Failed to move "s + entry.string() + ": "s + e.what());
     }
 }
 
@@ -53,19 +72,19 @@ void byExt(const fs::path &src, const std::unordered_map<std::string, fs::path> 
                 if(!exists(destDir)) {
                     try {
                         create_directory(destDir);
-                        std::cout << "Created: " << destDir.string() << std::endl;
+                        logInfo("Created folder: "s + destDir.string());
                     } catch(const fs::filesystem_error &e) {
-                        std::cerr << "Failed to create folder: " << e.what() << std::endl;
+                        logError("Failed to create folder: "s + e.what());
                         continue;
                     }
                 }
                 moveFile(entry.path(), destDir);
             } else {
-                std::cout << "Skipped (unmapped extention): " << entry.path().string() << std::endl;
+                logWarning("Skipped (unmapped extention): "s + entry.path().string());
             }
         }
     } catch(const fs::filesystem_error &e) {
-        std::cerr << e.what() << std::endl;
+        logError(e.what());
     }
 }
 
@@ -80,28 +99,28 @@ void byAlph(const fs::path &src) {
                 if(!exists(destDir)) {
                     try {
                         create_directory(destDir);
-                        std::cout << "Created: " << destDir.string() << std::endl;
+                        logInfo("Created folder: "s + destDir.string());
                     } catch(const fs::filesystem_error &e) {
-                        std::cerr << "Failed to create folder: " << e.what() << std::endl;
+                        logError("Failed to create folder: "s + e.what());
                         continue;
                     }
                 }
                 moveFile(entry.path(), destDir);
             } else {
-                std::cout << "Skipped (non-alphabetic start): " << entry.path().string() << std::endl;
+                logWarning("Skipped (non-alphabetic start): "s + entry.path().string());
             }
         }
     } catch(const fs::filesystem_error &e) {
-        std::cerr << e.what() << std::endl;
+        logError(e.what());
     }
 }
 
 void removeFolder(const fs::path &destination) {
     try {
         fs::remove_all(destination);
-        std::cout << "Removed: " << destination.string() << std::endl;
+        logInfo("Unsorted: "s + destination.string());
     } catch(const fs::filesystem_error &e) {
-        std::cerr << "Deleting folder: " << e.what() << std::endl;
+        logInfo("Deleting folder: "s + e.what());
     }
 }
 
@@ -110,7 +129,7 @@ void removeExt(const fs::path& src, const std::unordered_map<std::string, fs::pa
         for(const auto &entry : destMap) {
             const fs::path &destDir = entry.second;
             if(!exists(destDir) || !is_directory(destDir)) {
-                std::cerr << "Directory does not exist or is not a directory: " << destDir.string() << std::endl;
+                logWarning("Directory does not exists or is not a directory: "s + destDir.string());
                 continue;
             }
             for(const auto &entry : fs::directory_iterator(destDir)) {
@@ -120,7 +139,7 @@ void removeExt(const fs::path& src, const std::unordered_map<std::string, fs::pa
             removeFolder(destDir);
         }
     } catch(const fs::filesystem_error &e) {
-        std::cerr << e.what() << std::endl;
+        logError(e.what());
     }
 }
 
@@ -129,7 +148,7 @@ void removeAlph(const fs::path &src) {
         for(const auto &entry : fs::directory_iterator(src)) {
             const fs::path &destDir = entry.path();
             if(!is_directory(destDir)) {
-                std::cerr << "Directory does not exists or is not a directory: " << destDir.string() << std::endl;
+                logWarning("Directory does not exists or is not a directory: "s + destDir.string());
                 continue;
             }
             std::string destName = destDir.filename().string();
@@ -142,7 +161,7 @@ void removeAlph(const fs::path &src) {
             }
         }
     } catch(const fs::filesystem_error &e) {
-        std::cerr << e.what() << std::endl;
+        logError(e.what());
     }
 }
 
@@ -172,4 +191,10 @@ PYBIND11_MODULE(file_sorter, m) {
     m.def("build_dest_map", &buildDestMap,
           "Build a mapping of file extensions to destination directories",
           py::arg("src"), py::arg("keys"));
+
+    m.def("set_log_callbacks", [](py::function info, py::function error, py::function warn) {
+        py_log_info  = [info] (const std::string& s) { info(s); };
+        py_log_error = [error](const std::string& s) { error(s); };
+        py_log_warn  = [warn] (const std::string& s) { warn(s); };
+    });
 }
