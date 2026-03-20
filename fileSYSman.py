@@ -30,13 +30,13 @@ class MainWindow(QWidget):
         self.runtime_keys = {}
         self.runtime_map = {}
         
-        self.labels = [QLabel("Manage Search Roots:"), QLabel("Select Target Path:"), QLabel("Sorting Rules:")]
+        self.labels = [QLabel("Manage Search Roots:"), QLabel("Select Target Path:"), QLabel("Sorting Rules:"), QLabel("Ready")]
         self.browse_buttons = [QPushButton("Browse..."), QPushButton("Browse...")]
         self.add_buttons = [QPushButton("Add"), QPushButton("Add"), QPushButton("&Move Files")]
         self.remove_buttons = [QPushButton("Remove"), QPushButton("Remove")]
-        self.open_button = QPushButton("Open Folder")
+        self.open_buttons = [QPushButton("Open &Folder"), QPushButton("Open &Log")]
         self.path_inputs = [QLineEdit(), QLineEdit()]
-        self.ui_actions = [QAction("Sort Files"), QAction("Unsort Files")]
+        self.ui_actions = [QAction("&Sort Files"), QAction("&Unsort Files")]
         
         self.loadData()
         self.initUI()
@@ -75,9 +75,17 @@ class MainWindow(QWidget):
         
         main_layout = QVBoxLayout()
         
+        self.labels[3].setStyleSheet("font-size: 14px; padding: 10px;")
+        self.labels[3].setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        
+        status_layout = QHBoxLayout()
+        status_layout.addWidget(self.labels[3])
+        status_layout.addWidget(self.open_buttons[1])
+        
         main_layout.addLayout(self.rootPathsLayout()) # where you add/remove search roots.
         main_layout.addLayout(self.targetPathsLayout())
         main_layout.addLayout(self.sortingSettingsLayout()) # where you set the sorting rules.
+        main_layout.addLayout(status_layout)
         self.setLayout(main_layout)
 
         for lbl in self.labels:
@@ -95,7 +103,8 @@ class MainWindow(QWidget):
         self.path_inputs[1].textChanged.connect(self.updateTargetPath)
         self.add_buttons[1].clicked.connect(self.addTableRow)
         self.remove_buttons[1].clicked.connect(self.removeTableRow)
-        self.open_button.clicked.connect(lambda: self.openFolder(self.target))
+        self.open_buttons[0].clicked.connect(lambda: self.openFolder(self.target))
+        self.open_buttons[1].clicked.connect(self.showLog)
         self.add_buttons[2].clicked.connect(lambda: sort.to_src_dir(self.target, self.roots, self.runtime_map))
         self.table.itemChanged.connect(self.updateTuples)
         
@@ -201,6 +210,9 @@ class MainWindow(QWidget):
         else:
             QMessageBox.information(self, "Selection Required", "Please click a row to delete.")
 
+    def showLog(self):
+        return
+
     def handleAction(self, action):
         if action == "Sort":
             sort.by_ext(self.target, self.runtime_map)
@@ -236,7 +248,7 @@ class MainWindow(QWidget):
         self.path_inputs[1].setPlaceholderText("Add a target path...")
         
         target_layout.addWidget(self.path_inputs[1])
-        target_layout.addWidget(self.open_button)
+        target_layout.addWidget(self.open_buttons[0])
         target_layout.addWidget(self.add_buttons[2])
         target_layout.addWidget(self.browse_buttons[1])
         
@@ -250,7 +262,7 @@ class MainWindow(QWidget):
     def sortingSettingsLayout(self):
         sort_rules_manager = QHBoxLayout()
         
-        self.confirm_btn = QPushButton("Choose Action...")
+        self.confirm_btn = QPushButton("&Choose Action...")
         action_menu = QMenu(self)
         action_menu.addActions([self.ui_actions[0], self.ui_actions[1]])
         self.confirm_btn.setMenu(action_menu)
@@ -277,4 +289,4 @@ app = QApplication([])
 app.setStyle("windows")
 window = MainWindow()
 window.show()
-app.exec()
+sys.exit(app.exec())
