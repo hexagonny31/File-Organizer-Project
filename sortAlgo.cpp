@@ -35,8 +35,7 @@ std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, con
     for(const auto &[extension, folder] : keys) {
         fs::path temp = src / folder;
         dest_map[extension] = temp;
-        if(dest_map.find(extension) != dest_map.end()) logInfo("Mapped: "s + extension + " to "s + temp.string());
-        else logError("Failed to map: "s + extension);
+        if(dest_map.find(extension) == dest_map.end()) logError("Failed to map: "s + extension);
     }
     return dest_map;
 }

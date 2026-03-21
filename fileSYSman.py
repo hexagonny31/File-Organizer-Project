@@ -5,7 +5,7 @@ import sys
 from functools import partial
 from pathlib import Path
 from PyQt6.QtWidgets import (QApplication, QHeaderView, QPushButton, QLineEdit, QTableWidgetItem, QMenu, QWidget, QLabel, QSizePolicy,
-                             QVBoxLayout, QHBoxLayout, QTableWidget, QComboBox, QMessageBox, QFileDialog, QGroupBox)
+                             QVBoxLayout, QHBoxLayout, QTableWidget, QComboBox, QMessageBox, QFileDialog, QGroupBox, QTextEdit, QDialog)
 from PyQt6.QtGui import QIcon, QAction, QDesktopServices
 from PyQt6.QtCore import QUrl
 
@@ -17,6 +17,24 @@ def resourcePath(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
+class LogDialog(QDialog):
+    """Popup window that shows full log history"""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Full Log History")
+        self.resize(700, 500)
+
+        self.text_edit = QTextEdit()
+        self.text_edit.setReadOnly(True)
+        self.text_edit.setStyleSheet("background-color: #1e1e1e; color: #ffffff; font-family: Consolas;")
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.text_edit)
+
+    def append(self, html: str):
+        self.text_edit.append(html)
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -74,6 +92,8 @@ class MainWindow(QWidget):
         self.setFixedSize(700, 550) # width, height
         
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(5, 5, 5, 5)
+        main_layout.setSpacing(6)
         
         self.labels[3].setStyleSheet("font-size: 14px; padding: 10px;")
         self.labels[3].setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -81,6 +101,8 @@ class MainWindow(QWidget):
         status_layout = QHBoxLayout()
         status_layout.addWidget(self.labels[3])
         status_layout.addWidget(self.open_buttons[1])
+        self.log_dialog = LogDialog(self)
+        sort.set_log_callbacks(self.onInfo, self.onError, self.onWarn)
         
         main_layout.addLayout(self.rootPathsLayout()) # where you add/remove search roots.
         main_layout.addLayout(self.targetPathsLayout())
@@ -210,14 +232,34 @@ class MainWindow(QWidget):
         else:
             QMessageBox.information(self, "Selection Required", "Please click a row to delete.")
 
-    def showLog(self):
-        return
-
     def handleAction(self, action):
         if action == "Sort":
             sort.by_ext(self.target, self.runtime_map)
         else:
-            sort.remove_ext(self.target, self.runtime_map)    
+            sort.remove_ext(self.target, self.runtime_map)   
+            
+    def showLog(self):
+        self.log_dialog.show()
+        self.log_dialog.raise_()
+        self.log_dialog.activateWindow()
+        
+    def onInfo(self, msg: str):
+        html = f"<span style='color:#339900'>[INFO]</span> {msg}"
+        self.labels[3].setText(msg)           # Update single line label
+        self.labels[3].setStyleSheet("color: #339900; font-size: 14px;")
+        self.log_dialog.append(html)
+
+    def onError(self, msg: str):
+        html = f"<span style='color:#ff5555'>[ERROR]</span> {msg}"
+        self.labels[3].setText("ERROR: " + msg)
+        self.labels[3].setStyleSheet("color: #ff5555; font-size: 14px;")
+        self.log_dialog.append(html)
+
+    def onWarn(self, msg: str):
+        html = f"<span style='color:#ff9966'>[WARN]</span> {msg}"
+        self.labels[3].setText("WARN: " + msg)
+        self.labels[3].setStyleSheet("color: #ff9966; font-size: 14px;")
+        self.log_dialog.append(html)
 
     def rootPathsLayout(self):
         root_layout_add = QHBoxLayout() # source directory add layout
