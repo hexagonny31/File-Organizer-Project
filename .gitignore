@@ -3,4 +3,6 @@ build
 test.cpp
 .old
 .settings.json
+.gitignore
 fileSYSman.exe
+settings.json

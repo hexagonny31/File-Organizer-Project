@@ -83,7 +83,7 @@ void byExt(const fs::path &src, const std::unordered_map<std::string, fs::path> 
             }
         }
     } catch(const fs::filesystem_error &e) {
-        logError(e.what());
+        logError("Failed to sort files by extension: "s + e.what());
     }
 }
 
@@ -110,7 +110,7 @@ void byAlph(const fs::path &src) {
             }
         }
     } catch(const fs::filesystem_error &e) {
-        logError(e.what());
+        logError("Failed to sort files alphabetically: "s + e.what());
     }
 }
 
@@ -119,7 +119,7 @@ void removeFolder(const fs::path &destination) {
         fs::remove_all(destination);
         logInfo("Unsorted: "s + destination.string());
     } catch(const fs::filesystem_error &e) {
-        logError(e.what());
+        logError("Failed to remove folder: "s + e.what());
     }
 }
 
@@ -138,7 +138,7 @@ void removeExt(const fs::path& src, const std::unordered_map<std::string, fs::pa
             removeFolder(destDir);
         }
     } catch(const fs::filesystem_error &e) {
-        logError(e.what());
+        logError("Failed to remove extension folders: "s + e.what());
     }
 }
 
@@ -160,7 +160,7 @@ void removeAlph(const fs::path &src) {
             }
         }
     } catch(const fs::filesystem_error &e) {
-        logError(e.what());
+        logError("Failed to remove alphabetically sorted folders: "s + e.what());
     }
 }
 
