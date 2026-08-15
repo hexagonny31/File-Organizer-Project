@@ -119,7 +119,7 @@ void removeFolder(const fs::path &destination) {
         fs::remove_all(destination);
         logInfo("Unsorted: "s + destination.string());
     } catch(const fs::filesystem_error &e) {
-        logInfo("Deleting folder: "s + e.what());
+        logError(e.what());
     }
 }
 
