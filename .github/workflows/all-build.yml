@@ -39,6 +39,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install pybind11 pyqt6 pyinstaller pillow
 
+    - name: Setup MSVC Compiler
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
     - name: Compile C++ Backend (Windows)
       if: runner.os == 'Windows'
       run: |
@@ -51,18 +57,13 @@ jobs:
           Write-Host "Python .lib not found: $PYTHON_LIB"
           Exit 1
         }
-        $vs2022Paths = @(
-          "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat",
-          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat",
-          "C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Auxiliary\Build\vcvars64.bat"
-        )
-        $vcvars = $vs2022Paths | Where-Object { Test-Path $_ } | Select-Object -First 1
-        if (-not $vcvars) {
-          Write-Host "vcvars64.bat not found in any expected VS2022 installation location."
-          Exit 1
-        }
-        $CLFLAGS = "/LD /EHsc /std:c++17 /I$PYTHON_INCLUDE /I$PYBIND11_INCLUDE sortAlgo.cpp /Fe:file_sorter.pyd $PYTHON_LIB"
-        cmd /c "`"$vcvars`" && cl $CLFLAGS"
+
+        cl /LD /EHsc /std:c++17 `
+          /I"$PYTHON_INCLUDE" `
+          /I"$PYBIND11_INCLUDE" `
+          sortAlgo.cpp `
+          /Fe:file_sorter.pyd `
+          "$PYTHON_LIB"
       shell: pwsh
 
     - name: Compile C++ Backend (Linux/macOS)
