@@ -43,6 +43,19 @@ std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, con
 void moveFile(const fs::path &entry, fs::path destination) {
     destination = destination / entry.filename();
     try {
+        if(fs::exists(destination)) {
+            logWarning("File already exists, renaming: "s + entry.filename().string());
+            fs::path parent = destination.parent_path();
+            const std::string stem = destination.stem().string();
+            const std::string ext = destination.extension().string();
+            int counter = 1;
+            fs::path candidate;
+            do {
+                candidate = parent / (stem + " (" + std::to_string(counter) + ")" + ext);
+                ++counter;
+            } while(fs::exists(candidate));
+            destination = candidate;
+        }
         rename(entry, destination);
         logInfo("Moved: "s + destination.string());
     } catch(const fs::filesystem_error &e) {
