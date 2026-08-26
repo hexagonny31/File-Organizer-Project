@@ -41,8 +41,8 @@ std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, con
     return dest_map;
 }
 
-void moveFile(const fs::path &entry, fs::path destination) {
-    destination = destination / entry.filename();
+void moveFile(const fs::path &entry, fs::path folder) {
+    fs::path destination = folder / entry.filename();
     try {
         if(fs::exists(destination)) {
             logWarning("File already exists, renaming: "s + entry.filename().string());
@@ -58,7 +58,7 @@ void moveFile(const fs::path &entry, fs::path destination) {
             destination = candidate;
         }
         rename(entry, destination);
-        logInfo("Moved: "s + destination.string());
+        logInfo("Moved: "s + entry.filename().string() + " to "s + folder.string());
     } catch(const fs::filesystem_error &e) {
         logError("Failed to move "s + entry.string() + ": "s + e.what());
     }
