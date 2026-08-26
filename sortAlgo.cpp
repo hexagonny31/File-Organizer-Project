@@ -32,10 +32,11 @@ void logWarning(const std::string &m) {
 
 std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, const std::unordered_map<std::string, std::string> keys) {
     std::unordered_map<std::string, fs::path> dest_map;
-    for(const auto &[extension, folder] : keys) {
+    for(const auto &[ext, folder] : keys) {
         fs::path temp = src / folder;
-        dest_map[extension] = temp;
-        if(dest_map.find(extension) == dest_map.end()) logError("Failed to map: "s + extension);
+        dest_map[ext] = temp;
+        if(dest_map.find(ext) == dest_map.end()) logError("Failed to map: "s + ext);
+        else logInfo("Successfully mapped: "s + ext);
     }
     return dest_map;
 }
@@ -63,34 +64,34 @@ void moveFile(const fs::path &entry, fs::path destination) {
     }
 }
 
-void toSrcDir(const fs::path &src, const std::vector<fs::path> &initDir, const std::unordered_map<std::string, fs::path> &destMap) {
-    for(const auto& init : initDir) {
+void toSrcDir(const fs::path &src, const std::vector<fs::path> &init_dir, const std::unordered_map<std::string, fs::path> &dest_map) {
+    for(const auto& init : init_dir) {
         if(!exists(init) || !is_directory(init)) continue;
         for(const auto &entry : fs::directory_iterator(init)) {
             if(!entry.is_regular_file()) continue;
             const auto &ext = entry.path().extension().string();
-            if(destMap.find(ext) != destMap.end()) moveFile(entry.path(), src);
+            if(dest_map.find(ext) != dest_map.end()) moveFile(entry.path(), src);
         }
     }
 }
 
-void byExt(const fs::path &src, const std::unordered_map<std::string, fs::path> &destMap) {
+void byExt(const fs::path &src, const std::unordered_map<std::string, fs::path> &dest_map) {
     try {
         for(const auto& entry : fs::directory_iterator(src)) {
             if(!entry.is_regular_file()) continue;
             const auto &ext = entry.path().extension().string();
-            if(destMap.find(ext) != destMap.end()) {
-                fs::path destDir = destMap.at(ext);
-                if(!exists(destDir)) {
+            if(dest_map.find(ext) != dest_map.end()) {
+                fs::path dest_dir = dest_map.at(ext);
+                if(!exists(dest_dir)) {
                     try {
-                        create_directory(destDir);
-                        logInfo("Created folder: "s + destDir.string());
+                        create_directory(dest_dir);
+                        logInfo("Created folder: "s + dest_dir.string());
                     } catch(const fs::filesystem_error &e) {
                         logError("Failed to create folder: "s + e.what());
                         continue;
                     }
                 }
-                moveFile(entry.path(), destDir);
+                moveFile(entry.path(), dest_dir);
             } else {
                 logWarning("Skipped (unmapped extention): "s + entry.path().string());
             }
@@ -105,19 +106,19 @@ void byAlph(const fs::path &src) {
         for(const auto& entry : fs::directory_iterator(src)) {
             if(!entry.is_regular_file()) continue;
             const auto &filename = entry.path().filename().string();
-            char firstChar = std::tolower(filename[0]);
-            if(std::isalpha(firstChar)) {
-                fs::path destDir = src / std::string(1, firstChar);
-                if(!exists(destDir)) {
+            char first_char = std::tolower(filename[0]);
+            if(std::isalpha(first_char)) {
+                fs::path dest_dir = src / std::string(1, first_char);
+                if(!exists(dest_dir)) {
                     try {
-                        create_directory(destDir);
-                        logInfo("Created folder: "s + destDir.string());
+                        create_directory(dest_dir);
+                        logInfo("Created folder: "s + dest_dir.string());
                     } catch(const fs::filesystem_error &e) {
                         logError("Failed to create folder: "s + e.what());
                         continue;
                     }
                 }
-                moveFile(entry.path(), destDir);
+                moveFile(entry.path(), dest_dir);
             } else {
                 logWarning("Skipped (non-alphabetic start): "s + entry.path().string());
             }
@@ -136,19 +137,19 @@ void removeFolder(const fs::path &destination) {
     }
 }
 
-void removeExt(const fs::path& src, const std::unordered_map<std::string, fs::path> &destMap) {
+void removeExt(const fs::path& src, const std::unordered_map<std::string, fs::path> &dest_map) {
     try {
-        for(const auto &entry : destMap) {
-            const fs::path &destDir = entry.second;
-            if(!exists(destDir) || !is_directory(destDir)) {
-                logWarning("Directory does not exists or is not a directory: "s + destDir.string());
+        for(const auto &entry : dest_map) {
+            const fs::path &dest_dir = entry.second;
+            if(!exists(dest_dir) || !is_directory(dest_dir)) {
+                logWarning("Directory does not exists or is not a directory: "s + dest_dir.string());
                 continue;
             }
-            for(const auto &entry : fs::directory_iterator(destDir)) {
+            for(const auto &entry : fs::directory_iterator(dest_dir)) {
                 if(!entry.is_regular_file()) continue;
                 moveFile(entry.path(), src);
             }
-            removeFolder(destDir);
+            removeFolder(dest_dir);
         }
     } catch(const fs::filesystem_error &e) {
         logError("Failed to remove extension folders: "s + e.what());
@@ -158,18 +159,18 @@ void removeExt(const fs::path& src, const std::unordered_map<std::string, fs::pa
 void removeAlph(const fs::path &src) {
     try {
         for(const auto &entry : fs::directory_iterator(src)) {
-            const fs::path &destDir = entry.path();
-            if(!is_directory(destDir)) {
-                logWarning("Directory does not exists or is not a directory: "s + destDir.string());
+            const fs::path &dest_dir = entry.path();
+            if(!is_directory(dest_dir)) {
+                logWarning("Directory does not exists or is not a directory: "s + dest_dir.string());
                 continue;
             }
-            std::string destName = destDir.filename().string();
-            if(destName.size() == 1 && std::isupper(destName[0])) {
-                for(const auto &entry : fs::directory_iterator(destDir)) {
+            std::string dest_name = dest_dir.filename().string();
+            if(dest_name.size() == 1 && std::isupper(dest_name[0])) {
+                for(const auto &entry : fs::directory_iterator(dest_dir)) {
                     if(!entry.is_regular_file()) continue;
                     moveFile(entry.path(), src);
                 }
-                removeFolder(destDir);
+                removeFolder(dest_dir);
             }
         }
     } catch(const fs::filesystem_error &e) {
