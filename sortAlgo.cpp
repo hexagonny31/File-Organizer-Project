@@ -33,8 +33,7 @@ void logWarning(const std::string &m) {
 std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, const std::unordered_map<std::string, std::string> keys) {
     std::unordered_map<std::string, fs::path> dest_map;
     for(const auto &[ext, folder] : keys) {
-        fs::path temp = src / folder;
-        dest_map[ext] = temp;
+        dest_map[ext] = src / folder;
         if(dest_map.find(ext) == dest_map.end()) logError("Failed to map: "s + ext);
         else logInfo("Successfully mapped: "s + ext);
     }
