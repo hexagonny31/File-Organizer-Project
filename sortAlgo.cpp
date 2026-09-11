@@ -33,9 +33,9 @@ void logWarning(const std::string &m) {
 std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, const std::unordered_map<std::string, std::string> keys, bool log_print = true) {
     std::unordered_map<std::string, fs::path> dest_map;
     for(const auto &[ext, folder] : keys) {
-        dest_map[ext] = fs::path(src / folder);
+        auto [it, inserted] = dest_map.try_emplace(ext, src / folder);
         if(log_print) {
-            if(dest_map.find(ext) == dest_map.end()) logError("Failed to map: "s + ext);
+            if(!inserted) logError("Failed to map: "s + ext);
             else logInfo("Successfully mapped: "s + ext);
         }
     }
