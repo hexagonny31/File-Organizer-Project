@@ -154,7 +154,7 @@ class MainWindow(QWidget):
             return
         
         self.target = path_obj
-        self.runtime_map = sort.build_dest_map(self.target, self.runtime_keys)
+        self.runtime_map = sort.build_dest_map(self.target, self.runtime_keys, False)
         self.saveData()
 
     def openFolder(self, path):
@@ -214,7 +214,7 @@ class MainWindow(QWidget):
             for folder, ext_list in self.tuples
             for ext in ext_list
         }
-        self.runtime_map = sort.build_dest_map(self.target, self.runtime_keys)
+        self.runtime_map = sort.build_dest_map(self.target, self.runtime_keys, False)
         self.saveData()
         
     def addTableRow(self):

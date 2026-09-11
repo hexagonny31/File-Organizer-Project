@@ -30,12 +30,14 @@ void logWarning(const std::string &m) {
     else std::cout << "[WARNING] " << m << std::endl;
 }
 
-std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, const std::unordered_map<std::string, std::string> keys) {
+std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, const std::unordered_map<std::string, std::string> keys, bool log_print = true) {
     std::unordered_map<std::string, fs::path> dest_map;
     for(const auto &[ext, folder] : keys) {
-        dest_map[ext] = src / folder;
-        if(dest_map.find(ext) == dest_map.end()) logError("Failed to map: "s + ext);
-        else logInfo("Successfully mapped: "s + ext);
+        dest_map[ext] = fs::path(src / folder);
+        if(log_print) {
+            if(dest_map.find(ext) == dest_map.end()) logError("Failed to map: "s + ext);
+            else logInfo("Successfully mapped: "s + ext);
+        }
     }
     return dest_map;
 }
@@ -202,7 +204,7 @@ PYBIND11_MODULE(file_sorter, m) {
           py::arg("src"));
     m.def("build_dest_map", &buildDestMap,
           "Build a mapping of file extensions to destination directories",
-          py::arg("src"), py::arg("keys"));
+          py::arg("src"), py::arg("keys"), py::arg("log_print") = true);
 
     m.def("set_log_callbacks", [](py::function info, py::function error, py::function warn) {
         py_log_info  = [info] (const std::string& s) { info(s); };
