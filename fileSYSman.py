@@ -4,10 +4,16 @@ import os
 import sys
 from functools import partial
 from pathlib import Path
+from enum import IntEnum
 from PyQt6.QtWidgets import (QApplication, QHeaderView, QPushButton, QLineEdit, QTableWidgetItem, QMenu, QWidget, QLabel, QSizePolicy,
-                             QVBoxLayout, QHBoxLayout, QTableWidget, QComboBox, QMessageBox, QFileDialog, QGroupBox, QTextEdit, QDialog)
+                             QVBoxLayout, QHBoxLayout, QTableWidget, QComboBox, QMessageBox, QFileDialog, QCheckBox, QTextEdit, QDialog)
 from PyQt6.QtGui import QIcon, QAction, QDesktopServices
 from PyQt6.QtCore import QUrl
+
+class ConflictPolicy(IntEnum):
+    Rename    = 0
+    Skip      = 1
+    Overwrite = 2
 
 def resourcePath(relative_path):
     try:
@@ -58,6 +64,8 @@ class MainWindow(QWidget):
         
         self.log_dialog = LogDialog(self)
         sort.set_log_callbacks(self.onInfo, self.onError, self.onWarn)
+        sort.set_conflict_callback(self.onConflict)
+        self._conflict_apply_all = None
         
         self.loadData()
         self.initUI()
@@ -234,9 +242,11 @@ class MainWindow(QWidget):
             QMessageBox.information(self, "Selection Required", "Please click a row to delete.")
 
     def handleAction(self, action):
+        self._conflict_apply_all = None
         if action == "Sort":
             sort.by_ext(self.target, self.runtime_map)
         else:
+            self._conflict_apply_all = ConflictPolicy.Rename
             sort.remove_ext(self.target, self.runtime_map)   
             
     def showLog(self):
@@ -328,6 +338,40 @@ class MainWindow(QWidget):
         sort_rules_layout_container.addWidget(self.table)
         return sort_rules_layout_container
 
+    def onConflict(self, filename: str) -> int:
+        if self._conflict_apply_all is not None:
+            return int(self._conflict_apply_all)
+        
+        msg = QMessageBox(self)
+        msg.setWindowTitle("File already exists!")
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setText(f'The file "{filename}" already exists in the destination.')
+        msg.setInformativeText("What would you like to do?")
+        
+        btn_skip = msg.addButton("Skip", QMessageBox.ButtonRole.RejectRole)
+        btn_rename = msg.addButton("Rename", QMessageBox.ButtonRole.AcceptRole)
+        btn_overwrite = msg.addButton("Overwrite", QMessageBox.ButtonRole.DestructiveRole)
+        
+        apply_all = QCheckBox("Apply this action to all remaining conflicts")
+        msg.setCheckBox(apply_all)
+        
+        msg.exec()
+        
+        clicked = msg.clickedButton()
+        if clicked == btn_skip:
+            decision = ConflictPolicy.Skip
+        elif clicked == btn_rename:
+            decision = ConflictPolicy.Rename
+        elif clicked == btn_overwrite:
+            decision = ConflictPolicy.Overwrite
+        else:
+            decision = ConflictPolicy.Skip  # default to Skip if no button was clicked.
+        
+        if apply_all.isChecked():
+            self._conflict_apply_all = decision
+        
+        return int(decision)
+    
 app = QApplication([])
 app.setStyle("windows")
 window = MainWindow()
