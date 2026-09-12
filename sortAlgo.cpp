@@ -176,7 +176,8 @@ void removeExt(const fs::path& src, const std::unordered_map<std::string, fs::pa
                 if(!entry.is_regular_file()) continue;
                 moveFile(entry.path(), src);
             }
-            removeFolder(dest_dir);
+            if(fs::is_empty(dest_dir)) removeFolder(dest_dir);
+            else logWarning("Folder was not empty after moving files: "s + dest_dir.string());
         }
     } catch(const fs::filesystem_error &e) {
         logError("Failed to remove extension folders: "s + e.what());
@@ -197,7 +198,8 @@ void removeAlph(const fs::path &src) {
                     if(!entry.is_regular_file()) continue;
                     moveFile(entry.path(), src);
                 }
-                removeFolder(dest_dir);
+                if(fs::is_empty(dest_dir)) removeFolder(dest_dir);
+                else logWarning("Folder was not empty after moving files: "s + dest_dir.string());
             }
         }
     } catch(const fs::filesystem_error &e) {
