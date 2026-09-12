@@ -14,6 +14,7 @@ namespace fs = std::filesystem;
 std::function<void(const std::string&)> py_log_info;
 std::function<void(const std::string&)> py_log_error;
 std::function<void(const std::string&)> py_log_warn;
+std::function<int(const std::string& filename)> py_conflict_decision;
 
 void logInfo(const std::string &m) {
     if(py_log_info) py_log_info(m);
@@ -29,6 +30,12 @@ void logWarning(const std::string &m) {
     if(py_log_warn) py_log_warn(m);
     else std::cout << "[WARNING] " << m << std::endl;
 }
+
+enum class ConflictPolicy {
+    Rename,
+    Skip,
+    Overwrite,
+};
 
 std::unordered_map<std::string, fs::path> buildDestMap(const fs::path & src, const std::unordered_map<std::string, std::string> keys, bool log_print = true) {
     std::unordered_map<std::string, fs::path> dest_map;
@@ -46,20 +53,39 @@ void moveFile(const fs::path &entry, fs::path folder) {
     fs::path destination = folder / entry.filename();
     try {
         if(fs::exists(destination)) {
-            logWarning("File already exists, renaming: "s + entry.filename().string());
-            fs::path parent = destination.parent_path();
-            const std::string stem = destination.stem().string();
-            const std::string ext = destination.extension().string();
-            int counter = 1;
-            fs::path candidate;
-            do {
-                candidate = parent / (stem + " (" + std::to_string(counter) + ")" + ext);
-                ++counter;
-            } while(fs::exists(candidate));
-            destination = candidate;
+            ConflictPolicy decision = ConflictPolicy::Rename;
+            if(py_conflict_decision) decision = static_cast<ConflictPolicy>(py_conflict_decision(entry.filename().string()));
+            switch(decision) {
+            case ConflictPolicy::Skip: {
+                logInfo("Skipped: "s + entry.filename().string() + " to "s + folder.string());
+                return;
+            }
+            case ConflictPolicy::Rename: {
+                fs::path parent = destination.parent_path();
+                const std::string stem = destination.stem().string();
+                const std::string ext = destination.extension().string();
+                int counter = 1;
+                fs::path candidate;
+                do {
+                    candidate = parent / (stem + " (" + std::to_string(counter) + ")" + ext);
+                    ++counter;
+                } while(fs::exists(candidate));
+                destination = candidate;
+                logInfo("Renamed: "s + entry.filename().string() + " to "s + destination.filename().string());
+                break;
+            }
+            case ConflictPolicy::Overwrite: {
+                remove(destination);
+                logInfo("Overwriting: "s + entry.filename().string());
+                break;
+            }
+            default:
+                logWarning("Invalid decision for conflict resolution. Defaulting to skipping.");
+                return;
+            }
         }
         rename(entry, destination);
-        logInfo("Moved: "s + entry.filename().string() + " to "s + folder.string());
+        logInfo("Moved: "s + entry.string() + " to "s + folder.string());
     } catch(const fs::filesystem_error &e) {
         logError("Failed to move "s + entry.string() + ": "s + e.what());
     }
@@ -210,5 +236,10 @@ PYBIND11_MODULE(file_sorter, m) {
         py_log_info  = [info] (const std::string& s) { info(s); };
         py_log_error = [error](const std::string& s) { error(s); };
         py_log_warn  = [warn] (const std::string& s) { warn(s); };
+    });
+    m.def("set_conflict_callback", [](py::function cd) {
+        py_conflict_decision = [cd](const std::string& name) -> int {
+            return cd(name).cast<int>();
+        };
     });
 }
