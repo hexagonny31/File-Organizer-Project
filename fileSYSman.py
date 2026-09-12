@@ -56,6 +56,9 @@ class MainWindow(QWidget):
         self.path_inputs = [QLineEdit(), QLineEdit()]
         self.ui_actions = [QAction("&Sort Files"), QAction("&Unsort Files")]
         
+        self.log_dialog = LogDialog(self)
+        sort.set_log_callbacks(self.onInfo, self.onError, self.onWarn)
+        
         self.loadData()
         self.initUI()
         
@@ -101,8 +104,6 @@ class MainWindow(QWidget):
         status_layout = QHBoxLayout()
         status_layout.addWidget(self.labels[3])
         status_layout.addWidget(self.open_buttons[1])
-        self.log_dialog = LogDialog(self)
-        sort.set_log_callbacks(self.onInfo, self.onError, self.onWarn)
         
         main_layout.addLayout(self.rootPathsLayout()) # where you add/remove search roots.
         main_layout.addLayout(self.targetPathsLayout())
