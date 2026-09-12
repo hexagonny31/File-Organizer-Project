@@ -120,7 +120,7 @@ void byExt(const fs::path &src, const std::unordered_map<std::string, fs::path> 
                 }
                 moveFile(entry.path(), dest_dir);
             } else {
-                logWarning("Skipped (unmapped extention): "s + entry.path().string());
+                logWarning("Skipped (unmapped extension): "s + entry.path().string());
             }
         }
     } catch(const fs::filesystem_error &e) {
