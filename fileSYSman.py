@@ -345,14 +345,14 @@ class MainWindow(QWidget):
         msg = QMessageBox(self)
         msg.setWindowTitle("File already exists!")
         msg.setIcon(QMessageBox.Icon.Warning)
-        msg.setText(f'The file "{filename}" already exists in the destination.')
+        msg.setText(f'The file <b>"{filename}"</b> already exists in the destination.')
         msg.setInformativeText("What would you like to do?")
         
-        btn_skip = msg.addButton("Skip", QMessageBox.ButtonRole.RejectRole)
-        btn_rename = msg.addButton("Rename", QMessageBox.ButtonRole.AcceptRole)
-        btn_overwrite = msg.addButton("Overwrite", QMessageBox.ButtonRole.DestructiveRole)
+        btn_skip = msg.addButton("&Skip", QMessageBox.ButtonRole.RejectRole)
+        btn_rename = msg.addButton("&Rename", QMessageBox.ButtonRole.AcceptRole)
+        btn_overwrite = msg.addButton("&Overwrite", QMessageBox.ButtonRole.DestructiveRole).setStyleSheet("background-color: #ffcccc;")
         
-        apply_all = QCheckBox("Apply this action to all remaining conflicts")
+        apply_all = QCheckBox(f"&Apply to all remaining conflicts")
         msg.setCheckBox(apply_all)
         
         msg.exec()
