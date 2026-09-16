@@ -1,6 +1,7 @@
 #include "sortAlgo.h"
 
 #include <iostream>
+#include <string>
 
 using namespace std::string_literals;
 namespace fs = std::filesystem;
