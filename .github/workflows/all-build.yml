@@ -61,7 +61,8 @@ jobs:
         cl /LD /EHsc /std:c++17 `
           /I"$PYTHON_INCLUDE" `
           /I"$PYBIND11_INCLUDE" `
-          sortAlgo.cpp `
+          /I. `
+          pyBindings.cpp sortAlgo.cpp `
           /Fe:file_sorter.pyd `
           "$PYTHON_LIB"
       shell: pwsh
@@ -71,11 +72,11 @@ jobs:
       run: |
         PYTHON_INC=$(python -c "from sysconfig import get_paths; print(get_paths()['include'])")
         PYBIND_INC="extern/pybind11/include"
-        FLAGS="-O3 -Wall -shared -std=c++17 -fPIC -I$PYBIND_INC -I$PYTHON_INC"
+        FLAGS="-O3 -Wall -shared -std=c++17 -fPIC -I$PYBIND_INC -I$PYTHON_INC -I."
         if [ "$RUNNER_OS" == "macOS" ]; then
           FLAGS="$FLAGS -undefined dynamic_lookup"
         fi
-        g++ $FLAGS sortAlgo.cpp -o file_sorter.${{ matrix.backend_ext }}
+        g++ $FLAGS pyBindings.cpp sortAlgo.cpp -o file_sorter.${{ matrix.backend_ext }}
         chmod +x file_sorter.${{ matrix.backend_ext }}
       shell: bash
 
