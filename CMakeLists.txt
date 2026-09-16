@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(file_organizer)
 add_subdirectory(extern/pybind11 EXCLUDE_FROM_ALL)
-pybind11_add_module(file_sorter sortAlgo.cpp)
+pybind11_add_module(file_sorter
+    sortAlgo.cpp
+    pyBindings.cpp
+)
 target_compile_features(file_sorter PRIVATE cxx_std_20)
